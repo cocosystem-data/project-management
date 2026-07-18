@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COCOSystem PM — 進捗・利益管理</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+  :root{
+    --bg: #F5F7F9;
+    --surface: #FFFFFF;
+    --surface-2: #EEF1F4;
+    --ink: #16202B;
+    --ink-soft: #5B6B7A;
+    --ink-faint: #93A0AC;
+    --line: #E1E6EB;
+    --brand: #2B5C8A;
+    --brand-dark: #1E4160;
+    --brand-tint: #E7EEF5;
+    --profit: #1E8A63;
+    --profit-tint: #E4F4EC;
+    --warn: #B58900;        /* 黄色系の注意色（期日3日以内） */
+    --warn-tint: #FBF1CC;
+    --danger: #C1443B;      /* 赤（期日超過・当日） */
+    --danger-tint: #FBE7E5;
+    --rail-done: #1E8A63;
+    --rail-current: #2B5C8A;
+    --rail-future: #D6DCE2;
+    --rail-ongoing: #6B4FA0;
+    --font-display: 'Space Grotesk', 'Inter', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family: var(--font-body);
+    background: var(--bg);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+  #app{display:flex; min-height:100vh;}
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{
+    width: 232px; flex-shrink:0;
+    background: var(--ink);
+    color: #fff;
+    display:flex; flex-direction:column;
+    padding: 22px 16px;
+  }
+  .brand{
+    font-family: var(--font-display);
+    font-weight:700; font-size:17px; letter-spacing:0.2px;
+    display:flex; align-items:center; gap:9px;
+    padding: 4px 6px 22px 6px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    margin-bottom: 18px;
+  }
+  .brand-mark{
+    width:26px; height:26px; border-radius:7px;
+    background: linear-gradient(135deg, var(--brand) 0%, #5B9BC7 100%);
+    display:flex; align-items:center; justify-content:center;
+    font-size:13px; font-weight:700; color:#fff; flex-shrink:0;
+  }
+  .nav-item{
+    display:flex; align-items:center; gap:10px;
+    padding: 10px 12px; border-radius:8px; cursor:pointer;
+    font-size:14px; font-weight:500; color: rgba(255,255,255,0.72);
+    margin-bottom:2px; transition: background .12s ease, color .12s ease;
+  }
+  .nav-item:hover{ background: rgba(255,255,255,0.06); color:#fff; }
+  .nav-item.active{ background: rgba(255,255,255,0.1); color:#fff; }
+  .nav-icon{ width:16px; text-align:center; opacity:0.9; font-size:14px; }
+  .sidebar-footer{ margin-top:auto; padding-top:16px; border-top:1px solid rgba(255,255,255,0.1); }
+  .new-case-btn{
+    width:100%; padding:10px 12px; border-radius:8px; border:1px dashed rgba(255,255,255,0.3);
+    background: transparent; color: rgba(255,255,255,0.85); font-size:13px; font-weight:600;
+    cursor:pointer; font-family: var(--font-body);
+  }
+  .new-case-btn:hover{ background: rgba(255,255,255,0.08); }
+
+  /* ---------- Main ---------- */
+  main{ flex:1; padding: 28px 36px 60px; max-width: 1180px; min-width:0; }
+  .page-title{ font-family: var(--font-display); font-weight:700; font-size:22px; margin:0 0 3px; }
+  .page-sub{ color:var(--ink-soft); font-size:13.5px; margin:0 0 24px; }
+
+  .card{ background: var(--surface); border:1px solid var(--line); border-radius:12px; padding: 20px 22px; }
+  .grid-2{ display:grid; grid-template-columns: 1.55fr 1fr; gap:18px; align-items:start; }
+
+  /* KPI */
+  .kpi-row{ display:grid; grid-template-columns: repeat(4,1fr); gap:14px; margin-bottom:18px; }
+  .kpi{ background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:15px 17px; }
+  .kpi-label{ font-size:12px; color:var(--ink-soft); font-weight:600; letter-spacing:.2px; margin-bottom:8px;}
+  .kpi-value{ font-family: var(--font-mono); font-size:21px; font-weight:600; }
+  .kpi-value.profit{ color: var(--profit); }
+  .kpi-value.danger{ color: var(--danger); }
+
+  h3.section-h{ font-family: var(--font-display); font-size:14.5px; font-weight:700; margin:0 0 14px; }
+
+  /* Chart */
+  .chart-wrap{ overflow-x:auto; }
+  .chart{ display:flex; align-items:flex-end; gap:22px; height:200px; padding: 6px 6px 0; min-width: 420px; }
+  .chart-col{ display:flex; flex-direction:column; align-items:center; gap:8px; width:46px; flex-shrink:0; }
+  .chart-bars{ display:flex; align-items:flex-end; gap:4px; height:150px; }
+  .bar{ width:16px; border-radius:4px 4px 0 0; position:relative; }
+  .bar.revenue{ background: var(--brand-tint); border:1px solid var(--brand); border-bottom:none; }
+  .bar.cost{ background: #F0E6C4; border:1px solid var(--warn); border-bottom:none; }
+  .bar.profit{ background: var(--profit); }
+  .chart-month{ font-size:11px; color:var(--ink-soft); font-family:var(--font-mono); }
+  .chart-legend{ display:flex; gap:16px; margin-top:14px; font-size:12px; color:var(--ink-soft); flex-wrap:wrap; }
+  .legend-dot{ width:9px; height:9px; border-radius:2px; display:inline-block; margin-right:5px; vertical-align:-1px;}
+
+  .period-toggle{ display:flex; gap:6px; margin-bottom:14px; flex-wrap:wrap; }
+  .period-btn{
+    background: var(--surface-2); border:1px solid var(--line); color:var(--ink-soft);
+    font-size:12px; font-weight:700; padding:6px 12px; border-radius:20px; cursor:pointer; font-family:var(--font-body);
+  }
+  .period-btn:hover{ border-color: var(--brand); color: var(--brand); }
+  .period-btn.active{ background: var(--brand); border-color: var(--brand); color:#fff; }
+  .period-note{ font-size:11.5px; color:var(--ink-faint); margin-bottom:10px; }
+
+  /* Alerts */
+  .alert-item{ display:flex; gap:10px; align-items:center; padding:10px 0; border-bottom:1px solid var(--line); }
+  .alert-item:last-child{ border-bottom:none; }
+  .alert-main{ display:flex; gap:10px; align-items:flex-start; flex:1; cursor:pointer; min-width:0; }
+  .alert-main:hover .alert-text{ color: var(--brand); }
+  .alert-dot{ width:9px; height:9px; border-radius:50%; margin-top:5px; flex-shrink:0; }
+  .alert-dot.danger{ background: var(--danger); box-shadow:0 0 0 3px var(--danger-tint); }
+  .alert-dot.warning{ background: var(--warn); box-shadow:0 0 0 3px var(--warn-tint); }
+  .alert-text{ font-size:13px; line-height:1.5; color: var(--ink); }
+  .alert-empty{ color: var(--ink-faint); font-size:13px; padding: 6px 0; }
+  .alert-ok-btn{
+    flex-shrink:0; background: var(--surface-2); border:1px solid var(--line); color:var(--ink-soft);
+    font-size:11.5px; font-weight:700; padding:5px 10px; border-radius:7px; cursor:pointer; font-family:var(--font-body);
+  }
+  .alert-ok-btn:hover{ background: var(--profit-tint); border-color:var(--profit); color:var(--profit); }
+
+  /* List view */
+  .btn-primary{
+    background: var(--brand); color:#fff; border:none; padding:9px 15px; border-radius:8px;
+    font-size:13.5px; font-weight:600; cursor:pointer; font-family:var(--font-body);
+  }
+  .btn-primary:hover{ background: var(--brand-dark); }
+  .btn-primary:disabled{ background: var(--ink-faint); cursor:default; }
+  .btn-ghost{
+    background:transparent; color: var(--ink-soft); border:1px solid var(--line); padding:8px 13px;
+    border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:var(--font-body);
+  }
+  .btn-ghost:hover{ border-color: var(--ink-faint); color: var(--ink); }
+  .btn-danger-ghost{
+    background:transparent; color: var(--danger); border:1px solid var(--danger-tint); padding:8px 13px;
+    border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:var(--font-body);
+  }
+  .btn-small{
+    background:transparent; color:var(--brand); border:1px solid var(--brand-tint); padding:5px 10px;
+    border-radius:7px; font-size:11.5px; font-weight:700; cursor:pointer; font-family:var(--font-body);
+  }
+  .btn-small:hover{ background: var(--brand-tint); }
+
+  .filter-row{ display:grid; grid-template-columns: 2fr 1fr 1fr auto; gap:12px; align-items:end; }
+
+  table.case-table{ width:100%; border-collapse:collapse; }
+  table.case-table th{
+    text-align:left; font-size:11.5px; color:var(--ink-soft); font-weight:600; text-transform:uppercase;
+    letter-spacing:.3px; padding: 0 12px 10px; border-bottom:1px solid var(--line);
+  }
+  table.case-table td{ padding: 13px 12px; border-bottom:1px solid var(--line); font-size:13.5px; vertical-align:middle; }
+  table.case-table tr.row:hover{ background: var(--surface-2); }
+  .cust-name{ font-weight:600; cursor:pointer; }
+  .cust-name:hover{ color: var(--brand); }
+  .pill{ display:inline-block; padding:3px 9px; border-radius:20px; font-size:11.5px; font-weight:600; }
+  .pill.type-通常{ background:var(--surface-2); color:var(--ink-soft); }
+  .pill.type-代理店{ background:var(--brand-tint); color:var(--brand); }
+  .pill.type-補助金{ background:var(--profit-tint); color:var(--profit); }
+  .status-txt{ color: var(--ink-soft); }
+  .status-txt.ongoing{ color: var(--rail-ongoing); font-weight:700; }
+  .money-cell{ font-family: var(--font-mono); font-weight:600; }
+  .money-cell.pos{ color: var(--profit); }
+  .money-cell.neg{ color: var(--danger); }
+  .alert-check{ display:flex; align-items:center; gap:6px; font-size:11.5px; font-weight:700; cursor:pointer; }
+  .alert-check input{ cursor:pointer; }
+  .alert-check.level-danger{ color: var(--danger); }
+  .alert-check.level-warning{ color: var(--warn); }
+  .row-actions{ display:flex; gap:6px; }
+
+  /* Progress rail — signature element */
+  .rail{ display:flex; overflow-x:auto; padding: 6px 2px 4px; gap:0; }
+  .rail-step{ display:flex; flex-direction:column; align-items:center; min-width:96px; position:relative; cursor:pointer; }
+  .rail-line{ position:absolute; top:11px; left:-50%; width:100%; height:2px; background:var(--rail-future); z-index:0;}
+  .rail-step:first-child .rail-line{ display:none; }
+  .rail-line.done{ background: var(--rail-done); }
+  .rail-dot{
+    width:23px; height:23px; border-radius:50%; background:var(--rail-future); z-index:1;
+    display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:#fff;
+    border: 3px solid var(--bg);
+  }
+  .rail-dot.done{ background: var(--rail-done); }
+  .rail-dot.current{ background: var(--rail-current); box-shadow: 0 0 0 4px var(--brand-tint); }
+  .rail-dot.ongoing{ background: var(--rail-ongoing); box-shadow: 0 0 0 4px #EEE9F6; }
+  .rail-label{ font-size:11px; text-align:center; margin-top:7px; color:var(--ink-soft); font-weight:500; max-width:92px; line-height:1.3; }
+  .rail-step.done .rail-label, .rail-step.current .rail-label, .rail-step.ongoing .rail-label{ color: var(--ink); font-weight:600; }
+  .rail-date{ font-size:10px; color:var(--ink-faint); font-family:var(--font-mono); margin-top:2px; }
+  .rail-date.overdue{ color:var(--danger); font-weight:700; }
+  .rail-date.soon{ color:var(--warn); font-weight:700; }
+
+  /* Detail form */
+  .detail-header{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px; gap:20px; flex-wrap:wrap; }
+  .name-input{
+    font-family:var(--font-display); font-size:22px; font-weight:700; border:none; background:transparent;
+    padding:2px 0; border-bottom:1px solid transparent; width:340px; max-width:100%;
+  }
+  .name-input:focus{ outline:none; border-bottom:1px solid var(--brand); }
+  .header-actions{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+  .save-indicator{ font-size:11.5px; font-weight:600; color: var(--ink-faint); }
+  .save-indicator.dirty{ color: var(--warn); }
+
+  .field-row{ display:grid; grid-template-columns: repeat(3,1fr); gap:12px; margin-bottom:12px;}
+  .field-row.two{ grid-template-columns: repeat(2,1fr); }
+  .field{ display:flex; flex-direction:column; gap:5px; }
+  .field label{ font-size:11.5px; font-weight:600; color:var(--ink-soft); }
+  .field input, .field select{
+    font-family: var(--font-body); font-size:13.5px; padding:8px 10px; border:1px solid var(--line);
+    border-radius:7px; background:#fff; color:var(--ink); width:100%;
+  }
+  .field input[type=number], .field input[type=date]{ font-family: var(--font-mono); }
+  .field input:focus, .field select:focus{ outline:none; border-color: var(--brand); }
+
+  .radio-group{ display:flex; gap:16px; margin-bottom: 6px; flex-wrap:wrap; }
+  .radio-opt{ display:flex; align-items:center; gap:6px; font-size:13.5px; cursor:pointer; }
+  .agency-check{
+    display:flex; align-items:center; gap:8px; margin-top:10px; padding:10px 12px;
+    background: var(--brand-tint); border-radius:8px; font-size:13px; color:var(--brand-dark); font-weight:600;
+  }
+  .agency-check.unsigned{ background: var(--danger-tint); color: var(--danger); }
+
+  .plan-card{ border:1px solid var(--line); border-radius:10px; padding:14px 16px; margin-bottom:12px; background:#fbfcfd; }
+  .plan-card-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px; }
+  .plan-card-title{ font-size:13px; font-weight:700; }
+  .plan-card-title .req-tag{ font-size:10px; font-weight:700; color:var(--brand); background:var(--brand-tint); padding:2px 6px; border-radius:5px; margin-left:7px; }
+  .plan-profit-tag{ font-family:var(--font-mono); font-size:12.5px; font-weight:600; }
+  .remove-opt{ background:none; border:none; color:var(--ink-faint); cursor:pointer; font-size:12px; font-weight:600; }
+  .remove-opt:hover{ color: var(--danger); }
+  .setup-fee-block{ margin-top:6px; padding-top:12px; border-top:1px dashed var(--line); }
+  .setup-fee-note{ font-size:12px; color:var(--ink-soft); margin-top:6px; }
+
+  .add-opt-row{ display:flex; gap:10px; margin-top:6px; flex-wrap:wrap; }
+  .add-opt-row select{ font-size:13px; padding:8px 10px; border:1px solid var(--line); border-radius:7px; }
+
+  .totals-sticky{ position:sticky; top:20px; }
+  .totals-line{ display:flex; justify-content:space-between; align-items:baseline; padding:9px 0; border-bottom:1px solid var(--line); }
+  .totals-line:last-child{ border-bottom:none; }
+  .totals-line .l{ font-size:13px; color:var(--ink-soft); font-weight:600; }
+  .totals-line .v{ font-family:var(--font-mono); font-size:16px; font-weight:600; }
+  .totals-line.final .v{ font-size:21px; }
+  .totals-line.final .l{ font-size:13.5px; color:var(--ink); }
+  .v.pos{ color:var(--profit); } .v.neg{ color:var(--danger); }
+
+  .account-box{ display:flex; gap:12px; flex-wrap:wrap; }
+  .empty-state{ text-align:center; padding: 60px 20px; color:var(--ink-faint); }
+
+  .log-row{ display:flex; justify-content:space-between; gap:10px; padding:8px 0; border-bottom:1px solid var(--line); align-items:flex-start; }
+  .log-row:last-child{ border-bottom:none; }
+  .log-date{ font-family:var(--font-mono); font-size:11.5px; color:var(--ink-faint); margin-right:8px; white-space:nowrap; }
+  .log-text{ font-size:13px; line-height:1.5; }
+  .log-add-row{ display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; }
+  .log-add-row input[type=date]{ width:150px; font-family:var(--font-mono); padding:8px 10px; border:1px solid var(--line); border-radius:7px; }
+  .log-add-row input[type=text]{ flex:1; min-width:180px; padding:8px 10px; border:1px solid var(--line); border-radius:7px; font-family:var(--font-body); }
+
+  /* Toast */
+  #toast-host{ position:fixed; bottom:22px; right:26px; display:flex; flex-direction:column; gap:8px; z-index:999; max-width: calc(100vw - 40px); }
+  .toast{
+    background: var(--ink); color:#fff; padding:11px 16px; border-radius:9px; font-size:13px; font-weight:600;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.18); animation: toast-in .18s ease;
+  }
+  @keyframes toast-in{ from{ opacity:0; transform:translateY(6px);} to{ opacity:1; transform:translateY(0);} }
+
+  /* =========================================================
+     RESPONSIVE — mobile-first adjustments (<=720px)
+     ========================================================= */
+  @media (max-width: 720px){
+    #app{ flex-direction: column; }
+    .sidebar{
+      width:100%; flex-direction:row; align-items:center; padding:12px 14px; gap:6px;
+      overflow-x:auto; -webkit-overflow-scrolling:touch;
+    }
+    .brand{ border-bottom:none; margin-bottom:0; padding:0; }
+    .brand span:last-child{ display:none; } /* テキストは省略しロゴのみ表示してスペース確保 */
+    .sidebar-footer{ margin-top:0; padding-top:0; border-top:none; margin-left:auto; }
+    .new-case-btn{ width:auto; white-space:nowrap; padding:9px 12px; }
+    .nav-item{ margin-bottom:0; white-space:nowrap; }
+
+    main{ padding: 16px 12px 40px; }
+    .page-title{ font-size:19px; }
+    .card{ padding:16px 14px; }
+
+    .kpi-row{ grid-template-columns: repeat(2,1fr); gap:10px; }
+    .kpi{ padding:12px 13px; }
+    .kpi-value{ font-size:17px; }
+
+    .grid-2{ grid-template-columns: 1fr; }
+    .totals-sticky{ position:static; }
+
+    .field-row, .field-row.two{ grid-template-columns: 1fr; }
+    .detail-header{ flex-direction:column; align-items:stretch; }
+    .header-actions{ justify-content:flex-start; width:100%; }
+    .name-input{ width:100%; font-size:19px; }
+
+    .filter-row{ grid-template-columns: 1fr; }
+
+    /* 一覧をテーブル→カード表示に切り替え */
+    table.case-table thead{ display:none; }
+    table.case-table, table.case-table tbody{ display:block; width:100%; }
+    table.case-table tr.row{
+      display:block; border:1px solid var(--line); border-radius:12px; margin-bottom:12px; padding:12px 14px; background:var(--surface);
+    }
+    table.case-table td{
+      display:flex; justify-content:space-between; align-items:center; gap:10px;
+      padding: 7px 0; border-bottom:1px dashed var(--line); font-size:13.5px;
+    }
+    table.case-table td:last-child{ border-bottom:none; }
+    table.case-table td[data-label]::before{
+      content: attr(data-label); font-size:11px; font-weight:700; color:var(--ink-soft); flex-shrink:0;
+    }
+    table.case-table td.cust-name{ font-size:15.5px; padding-bottom:9px; border-bottom:1px solid var(--line); }
+    table.case-table td.cust-name::before{ content:''; }
+    .row-actions{ justify-content:flex-end; padding-top:9px !important; }
+    .row-actions::before{ content:'' !important; }
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toast-host"></div>
+
+<script>
+/* =========================================================
+   DATE / FORMAT HELPERS
+   ========================================================= */
+const pad = n => String(n).padStart(2,'0');
+const toISO = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const parseISO = s => { if(!s) return null; const [y,m,d] = s.split('-').map(Number); return new Date(y,m-1,d); };
+const addMonths = (d,n) => { const r = new Date(d); r.setMonth(r.getMonth()+n); return r; };
+const lastDayOfMonth = d => new Date(d.getFullYear(), d.getMonth()+1, 0);
+const firstDayOfMonth = d => new Date(d.getFullYear(), d.getMonth(), 1);
+const fmtDate = d => d ? `${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())}` : '—';
+const fmtMoney = n => '¥' + Math.round(n||0).toLocaleString('ja-JP');
+const fmtMonthLabel = key => { const [y,m] = key.split('-'); return `${y.slice(2)}/${m}`; };
+const today = new Date(); today.setHours(0,0,0,0);
+const deepClone = obj => JSON.parse(JSON.stringify(obj));
+
+function nextMonthly20(from){
+  let d = new Date(from.getFullYear(), from.getMonth(), 20);
+  if(d < from) d = new Date(from.getFullYear(), from.getMonth()+1, 20);
+  return d;
+}
+function computeDeadlines(kickoffISO){
+  if(!kickoffISO) return null;
+  const k = parseISO(kickoffISO);
+  return {
+    monthEnd: lastDayOfMonth(k),
+    invoiceDate: firstDayOfMonth(addMonths(k,1)),
+    firstPaymentDate: new Date(addMonths(k,1).getFullYear(), addMonths(k,1).getMonth(), 20),
+    reportDate: new Date(k.getFullYear(), k.getMonth()+3, k.getDate()),
+  };
+}
+function uid(prefix){ return prefix + '_' + Math.random().toString(36).slice(2,9); }
+
+function showToast(msg){
+  const host = document.getElementById('toast-host');
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = msg;
+  host.appendChild(el);
+  setTimeout(()=>{ el.style.opacity='0'; el.style.transition='opacity .25s'; setTimeout(()=>el.remove(), 260); }, 2200);
+}
+
+/* =========================================================
+   DOMAIN CONSTANTS
+   ========================================================= */
+// index 0-11 = 事前確認〜3ヶ月後レポート提出確認 / index 12 = 契約中(継続)
+const STEPS = [
+  {key:'pre', label:'事前確認'},
+  {key:1, label:'申込受付'},
+  {key:2, label:'アカウント作成'},
+  {key:3, label:'初期チェック'},
+  {key:4, label:'Google連携'},
+  {key:5, label:'SNS連携'},
+  {key:6, label:'導入スタート'},
+  {key:7, label:'月末経過連絡'},
+  {key:8, label:'請求書発行'},
+  {key:9, label:'初回入金確認'},
+  {key:10, label:'毎月の支払確認'},
+  {key:11, label:'3ヶ月後レポート提出確認'},
+  {key:'ongoing', label:'契約中'},
+];
+const ONGOING_INDEX = STEPS.length - 1; // 12
+const PLAN_OPTIONS = {
+  '基本(AIO)': ['ライトプラン','ハイプラン'],
+  'AI広告': ['ライト','スタンダード','プレミアム'],
+  'インスタ自動投稿': ['スタンダード','ハイプラン'],
+};
+// サービス名：プラン名 の形式で常に表示する
+function itemLabel(item){ return `${item.category}：${item.planType}`; }
+function statusLabel(idx){ return STEPS[idx] ? STEPS[idx].label : STEPS[0].label; }
+function statusFilterLabel(idx){
+  if(idx===0) return '事前確認';
+  if(idx===ONGOING_INDEX) return '契約中';
+  return `${idx}. ${STEPS[idx].label}`;
+}
+
+/* =========================================================
+   SEED DATA
+   ========================================================= */
+// setupFeeRevenue / setupFeeCost は基本プラン(AIO)にのみ意味を持つ単発の初期費用。
+// 初期費用の原価には志村さん・JINさんへの「報酬」は含めない仕様のため、単一のコスト欄として扱う。
+function makeItem(category, planType, kickoffDate, revenue, shimura, jin, other, setupFeeRevenue, setupFeeCost){
+  return {
+    id: uid('item'), category, planType, kickoffDate, revenue,
+    costShimura: shimura, costJin: jin, costOther: other,
+    setupFeeRevenue: setupFeeRevenue||0, setupFeeCost: setupFeeCost||0,
+  };
+}
+function makeLog(date, text){ return { id: uid('log'), date, text }; }
+
+let state = {
+  view: 'dashboard', // dashboard | list | detail
+  selectedId: null,
+  draft: null,          // 編集中の作業コピー(保存ボタンを押すまでcasesへ反映されない)
+  isNewCase: false,
+  savedSnapshot: null,  // draftを開いた時点のJSON文字列(差分検知用)
+  dismissedAlerts: new Set(), // 手動で「OK」/チェックした通知のID
+  listFilters: { contractType:'all', status:'all', keyword:'' },
+  dashboardPeriod: 12, // ダッシュボードの月別グラフ表示期間(月数)。'all'で全期間表示
+  cases: [
+    {
+      id: uid('case'), customerName: '株式会社サンライズ商事', contractType: '通常', agencyContractSigned: false,
+      currentStepIndex: 9, kickoffDate: '2026-06-15',
+      accountId: 'sunrise-aio', accountPw: 'sunrise2026!',
+      basePlan: makeItem('基本(AIO)','ハイプラン','2026-06-15', 180000, 40000, 20000, 5000, 30000, 8000),
+      options: [ makeItem('AI広告','スタンダード','2026-06-15', 60000, 15000, 0, 8000) ],
+      logs: [ makeLog('2026-06-20','Google連携の初回設定完了。SNS連携待ち。') ],
+    },
+    {
+      id: uid('case'), customerName: '有限会社みらい整体院', contractType: '代理店', agencyContractSigned: false,
+      currentStepIndex: 0, kickoffDate: '',
+      accountId: '', accountPw: '',
+      basePlan: makeItem('基本(AIO)','ライトプラン','', 98000, 25000, 0, 0, 30000, 8000),
+      options: [],
+      logs: [ makeLog('2026-07-15','代理店契約書を送付。返送待ち。') ],
+    },
+    {
+      id: uid('case'), customerName: '田中デンタルクリニック', contractType: '補助金', agencyContractSigned: false,
+      currentStepIndex: ONGOING_INDEX, kickoffDate: '2026-04-10',
+      accountId: 'tanaka-dc', accountPw: 'dental#4102',
+      basePlan: makeItem('基本(AIO)','ハイプラン','2026-04-10', 180000, 40000, 20000, 0, 30000, 8000),
+      options: [
+        makeItem('AI広告','プレミアム','2026-04-10', 90000, 20000, 0, 12000),
+        makeItem('インスタ自動投稿','ハイプラン','2026-05-01', 45000, 10000, 0, 0),
+      ],
+      logs: [ makeLog('2026-07-05','3ヶ月後レポート提出済み。以降は契約中として継続課金。') ],
+    },
+    {
+      id: uid('case'), customerName: 'ベーカリーHana', contractType: '通常', agencyContractSigned: false,
+      currentStepIndex: 6, kickoffDate: '2026-07-10',
+      accountId: 'hana-bakery', accountPw: 'hanaPass77',
+      basePlan: makeItem('基本(AIO)','ライトプラン','2026-07-10', 98000, 25000, 0, 0, 30000, 8000),
+      options: [],
+      logs: [ makeLog('2026-07-16','Google連携エラー対応中。サポートへ問い合わせ済み。') ],
+    },
+  ],
+};
+
+/* =========================================================
+   COMPUTATION HELPERS
+   ========================================================= */
+function caseLineItems(c){
+  const items = [];
+  if(c.basePlan) items.push(c.basePlan);
+  (c.options||[]).forEach(o => items.push(o));
+  return items;
+}
+function lineCost(item){ return (item.costShimura||0)+(item.costJin||0)+(item.costOther||0); }
+function lineProfit(item){ return (item.revenue||0) - lineCost(item); }
+
+function caseTotals(c){
+  const items = caseLineItems(c);
+  const monthlyRevenue = items.reduce((s,i)=>s+(i.revenue||0),0);
+  const monthlyCost = items.reduce((s,i)=>s+lineCost(i),0);
+  const setupRevenue = c.basePlan.setupFeeRevenue||0;
+  const setupCost = c.basePlan.setupFeeCost||0;
+  const revenue = monthlyRevenue + setupRevenue;
+  const cost = monthlyCost + setupCost;
+  return {
+    revenue, cost, profit: revenue - cost, items,
+    setupFee: { revenue:setupRevenue, cost:setupCost, profit:setupRevenue-setupCost },
+  };
+}
+
+// 月別集計：
+// ・月額プラン/オプションは導入月に単発計上。さらに「契約中」に達した案件は翌月以降も今月まで継続計上。
+// ・初期費用(基本プランのみ)は導入月に単発で1回だけ計上し、翌月以降は繰り返さない。
+function monthlyAggregate(cases){
+  const map = {};
+  const add = (key, revenue, cost) => {
+    if(!map[key]) map[key] = {revenue:0, cost:0};
+    map[key].revenue += revenue;
+    map[key].cost += cost;
+  };
+  const todayKey = toISO(today).slice(0,7);
+  cases.forEach(c => {
+    const ongoing = c.currentStepIndex >= ONGOING_INDEX;
+    caseLineItems(c).forEach(i => {
+      if(!i.kickoffDate) return;
+      const baseMonth = parseISO(i.kickoffDate);
+      const baseKey = i.kickoffDate.slice(0,7);
+      add(baseKey, i.revenue||0, lineCost(i));
+      if(ongoing){
+        let cursor = new Date(baseMonth.getFullYear(), baseMonth.getMonth()+1, 1);
+        while(toISO(cursor).slice(0,7) <= todayKey){
+          add(toISO(cursor).slice(0,7), i.revenue||0, lineCost(i));
+          cursor = new Date(cursor.getFullYear(), cursor.getMonth()+1, 1);
+        }
+      }
+    });
+    if(c.basePlan && c.basePlan.kickoffDate){
+      const setupKey = c.basePlan.kickoffDate.slice(0,7);
+      add(setupKey, c.basePlan.setupFeeRevenue||0, c.basePlan.setupFeeCost||0);
+    }
+  });
+  return Object.keys(map).sort().map(k => ({ month:k, revenue:map[k].revenue, cost:map[k].cost, profit: map[k].revenue - map[k].cost }));
+}
+
+// ダッシュボードの表示期間で月別データを絞り込む(直近N ヶ月、または全期間)
+function sliceByPeriod(monthly, period){
+  if(period === 'all') return monthly;
+  return monthly.slice(-period);
+}
+
+// すべての「有効な」通知を計算する(dismiss判定は呼び出し側で行う)
+// ・期日が当日または過ぎている → danger(赤)
+// ・期日まで3日以内 → warning(黄)
+// ・ステータスがその期日のステップを追い越したら自動的に消える
+function buildAllAlerts(cases){
+  const alerts = [];
+  cases.forEach(c => {
+    if(c.contractType === '代理店' && !c.agencyContractSigned){
+      alerts.push({ id:`${c.id}:agency`, level:'danger', caseId:c.id, text:`${c.customerName}：代理店契約書が未締結のため、次のステップに進めません` });
+    }
+    if(c.kickoffDate){
+      const dl = computeDeadlines(c.kickoffDate);
+      const checks = [
+        {idx:7,  date: dl.monthEnd,        label:'月末経過連絡'},
+        {idx:8,  date: dl.invoiceDate,     label:'請求書発行'},
+        {idx:9,  date: dl.firstPaymentDate,label:'初回入金確認'},
+        {idx:11, date: dl.reportDate,      label:'3ヶ月後レポート提出確認'},
+      ];
+      checks.forEach(ch => {
+        if(c.currentStepIndex > ch.idx) return; // ステータスが進んだので自動的に消える
+        const diff = Math.round((ch.date - today)/86400000);
+        if(diff <= 0) alerts.push({ id:`${c.id}:${ch.label}:${toISO(ch.date)}`, level:'danger', caseId:c.id, text:`${c.customerName}：「${ch.label}」の期日${diff===0?'は本日です':'を過ぎています'}（期日 ${fmtDate(ch.date)}）` });
+        else if(diff <= 3) alerts.push({ id:`${c.id}:${ch.label}:${toISO(ch.date)}`, level:'warning', caseId:c.id, text:`${c.customerName}：「${ch.label}」まで残り${diff}日（期日 ${fmtDate(ch.date)}）` });
+      });
+      // 毎月の支払確認：ステップ10以降(契約中を含む)は毎月継続して発生
+      if(c.currentStepIndex >= 10){
+        const nm = nextMonthly20(today);
+        const diffNm = Math.round((nm-today)/86400000);
+        if(diffNm <= 3) alerts.push({ id:`${c.id}:monthly:${toISO(nm)}`, level: diffNm<=0?'danger':'warning', caseId:c.id, text:`${c.customerName}：毎月の支払確認（${fmtDate(nm)}）` });
+      }
+    }
+  });
+  const order = {danger:0, warning:1};
+  return alerts.sort((a,b)=>order[a.level]-order[b.level]);
+}
+function visibleAlerts(cases){
+  return buildAllAlerts(cases).filter(a => !state.dismissedAlerts.has(a.id));
+}
+function dismissAlert(id){ state.dismissedAlerts.add(id); }
+function dismissCaseAlerts(caseId){
+  buildAllAlerts(state.cases).filter(a=>a.caseId===caseId).forEach(a=>state.dismissedAlerts.add(a.id));
+}
+function worstLevel(alerts){
+  if(alerts.some(a=>a.level==='danger')) return 'danger';
+  if(alerts.length) return 'warning';
+  return null;
+}
+
+/* =========================================================
+   RENDER: SHELL
+   ========================================================= */
+function goTo(view){
+  if(state.view === 'detail' && isDraftDirty()){
+    if(!confirm('保存されていない変更があります。破棄して移動しますか？')) return;
+  }
+  state.draft = null; state.isNewCase = false;
+  state.view = view;
+  render();
+}
+
+function render(){
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    <div class="sidebar">
+      <div class="brand"><span class="brand-mark">C</span><span>COCOSystem PM</span></div>
+      <div class="nav-item ${state.view==='dashboard'?'active':''}" data-nav="dashboard"><span class="nav-icon">◆</span> ダッシュボード</div>
+      <div class="nav-item ${state.view==='list'||state.view==='detail'?'active':''}" data-nav="list"><span class="nav-icon">≡</span> 案件一覧</div>
+      <div class="sidebar-footer">
+        <button class="new-case-btn" id="btn-new-case">＋ 新規案件を登録</button>
+      </div>
+    </div>
+    <main id="main"></main>
+  `;
+  document.querySelectorAll('[data-nav]').forEach(el => el.addEventListener('click', () => goTo(el.dataset.nav)));
+  document.getElementById('btn-new-case').addEventListener('click', () => {
+    if(state.view === 'detail' && isDraftDirty()){
+      if(!confirm('保存されていない変更があります。破棄して新規案件を作成しますか？')) return;
+    }
+    createNewCase();
+  });
+
+  if(state.view === 'dashboard') renderDashboard();
+  else if(state.view === 'list') renderList();
+  else if(state.view === 'detail') renderDetail();
+}
+
+function createNewCase(){
+  const draft = {
+    id: uid('case'), customerName: '新規案件', contractType: '通常', agencyContractSigned:false,
+    currentStepIndex: 0, kickoffDate: '',
+    accountId:'', accountPw:'',
+    basePlan: makeItem('基本(AIO)','ライトプラン','', 0,0,0,0, 30000, 5000),
+    options: [],
+    logs: [],
+  };
+  state.draft = draft;
+  state.selectedId = draft.id;
+  state.isNewCase = true;
+  state.savedSnapshot = null;
+  state.view = 'detail';
+  render();
+}
+
+function openDetail(caseId){
+  const c = state.cases.find(x=>x.id===caseId);
+  if(!c) return;
+  state.selectedId = caseId;
+  state.draft = deepClone(c);
+  state.savedSnapshot = JSON.stringify(c);
+  state.isNewCase = false;
+  state.view = 'detail';
+  render();
+}
+
+/* =========================================================
+   RENDER: DASHBOARD
+   ========================================================= */
+function renderDashboard(){
+  const main = document.getElementById('main');
+  const allMonthly = monthlyAggregate(state.cases);
+  const monthly = sliceByPeriod(allMonthly, state.dashboardPeriod); // グラフ表示用(期間で絞り込み)
+  const alerts = visibleAlerts(state.cases);
+  const totalProfit = allMonthly.reduce((s,m)=>s+m.profit,0); // 累計KPIは常に全期間で計算
+  const thisMonthKey = toISO(today).slice(0,7);
+  const thisMonth = allMonthly.find(m=>m.month===thisMonthKey);
+  const maxVal = Math.max(1, ...monthly.map(m=>Math.max(m.revenue, m.cost)));
+  const hiddenMonths = allMonthly.length - monthly.length;
+
+  main.innerHTML = `
+    <div class="page-title">ダッシュボード</div>
+    <div class="page-sub">${fmtDate(today)} 時点の案件状況</div>
+
+    <div class="kpi-row">
+      <div class="kpi"><div class="kpi-label">案件数</div><div class="kpi-value">${state.cases.length} 件</div></div>
+      <div class="kpi"><div class="kpi-label">累計 最終利益</div><div class="kpi-value profit">${fmtMoney(totalProfit)}</div></div>
+      <div class="kpi"><div class="kpi-label">今月の利益</div><div class="kpi-value ${thisMonth&&thisMonth.profit<0?'danger':'profit'}">${fmtMoney(thisMonth?thisMonth.profit:0)}</div></div>
+      <div class="kpi"><div class="kpi-label">要対応アラート</div><div class="kpi-value ${alerts.some(a=>a.level==='danger')?'danger':''}">${alerts.length} 件</div></div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3 class="section-h">月別 売上・原価・利益の推移</h3>
+        <div class="period-toggle" id="period-toggle">
+          ${[3,6,12,'all'].map(p => `
+            <button class="period-btn ${state.dashboardPeriod===p?'active':''}" data-period="${p}">${p==='all'?'全期間':p+'ヶ月'}</button>
+          `).join('')}
+        </div>
+        ${hiddenMonths > 0 ? `<div class="period-note">全${allMonthly.length}ヶ月分のうち直近${monthly.length}ヶ月分を表示中です。それ以前のデータは「全期間」に切り替えるか、グラフを横スクロールすると確認できます。</div>` : ''}
+        ${monthly.length===0 ? `<div class="empty-state">まだ導入日のあるプランがありません</div>` : `
+        <div class="chart-wrap" id="chart-wrap"><div class="chart">
+          ${monthly.map(m => `
+            <div class="chart-col">
+              <div class="chart-bars">
+                <div class="bar revenue" style="height:${Math.max(4,(m.revenue/maxVal)*150)}px" title="売上 ${fmtMoney(m.revenue)}"></div>
+                <div class="bar cost" style="height:${Math.max(4,(m.cost/maxVal)*150)}px" title="原価 ${fmtMoney(m.cost)}"></div>
+                <div class="bar profit" style="height:${Math.max(4,(Math.max(m.profit,0)/maxVal)*150)}px" title="利益 ${fmtMoney(m.profit)}"></div>
+              </div>
+              <div class="chart-month">${fmtMonthLabel(m.month)}</div>
+            </div>
+          `).join('')}
+        </div></div>
+        <div class="chart-legend">
+          <span><span class="legend-dot" style="background:var(--brand-tint);border:1px solid var(--brand)"></span>売上</span>
+          <span><span class="legend-dot" style="background:#F0E6C4;border:1px solid var(--warn)"></span>原価</span>
+          <span><span class="legend-dot" style="background:var(--profit)"></span>利益</span>
+        </div>
+        <div class="page-sub" style="margin:12px 0 0;">※基本プランの初期費用は導入月のみ、月額プランは「契約中」の間ずっと積み上がります</div>`}
+      </div>
+
+      <div class="card">
+        <h3 class="section-h">直近で必要なタスク</h3>
+        <div class="chart-legend" style="margin-bottom:10px;">
+          <span><span class="legend-dot" style="background:var(--danger)"></span>期日超過・本日中</span>
+          <span><span class="legend-dot" style="background:var(--warn)"></span>3日以内</span>
+        </div>
+        ${alerts.length===0 ? `<div class="alert-empty">現在、対応が必要なタスクはありません</div>` :
+          alerts.map(a => `
+            <div class="alert-item">
+              <div class="alert-main" data-goto="${a.caseId}">
+                <span class="alert-dot ${a.level}"></span>
+                <span class="alert-text">${a.text}</span>
+              </div>
+              <button class="alert-ok-btn" data-dismiss="${a.id}">OK</button>
+            </div>
+          `).join('')}
+      </div>
+    </div>
+  `;
+  main.querySelectorAll('[data-goto]').forEach(el => {
+    el.addEventListener('click', () => openDetail(el.dataset.goto));
+  });
+  main.querySelectorAll('[data-dismiss]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dismissAlert(btn.dataset.dismiss);
+      renderDashboard();
+    });
+  });
+  main.querySelectorAll('[data-period]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const v = btn.dataset.period;
+      state.dashboardPeriod = v === 'all' ? 'all' : parseInt(v, 10);
+      renderDashboard();
+    });
+  });
+  // グラフは常に最新月が見える位置(右端)までスクロールしておく
+  const chartWrap = document.getElementById('chart-wrap');
+  if(chartWrap) chartWrap.scrollLeft = chartWrap.scrollWidth;
+}
+
+/* =========================================================
+   RENDER: LIST（フィルタ部は据え置き、tbodyのみ再描画してフォーカスを保持）
+   ========================================================= */
+function filteredCases(){
+  const f = state.listFilters;
+  const kw = f.keyword.trim().toLowerCase();
+  return state.cases.filter(c => {
+    if(f.contractType !== 'all' && c.contractType !== f.contractType) return false;
+    if(f.status !== 'all' && String(c.currentStepIndex) !== f.status) return false;
+    if(kw && !c.customerName.toLowerCase().includes(kw)) return false;
+    return true;
+  });
+}
+
+function renderList(){
+  const main = document.getElementById('main');
+  main.innerHTML = `
+    <div class="page-title">案件一覧</div>
+    <div class="page-sub">全 ${state.cases.length} 件</div>
+
+    <div class="card" style="margin-bottom:16px;">
+      <div class="filter-row">
+        <div class="field">
+          <label>店舗名・顧客名で検索</label>
+          <input type="text" id="filter-keyword" placeholder="例：ベーカリー" value="${escapeAttr(state.listFilters.keyword)}" />
+        </div>
+        <div class="field">
+          <label>契約形態</label>
+          <select id="filter-contract">
+            <option value="all">すべて</option>
+            <option value="通常">通常</option>
+            <option value="代理店">代理店</option>
+            <option value="補助金">補助金</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>現在のステータス</label>
+          <select id="filter-status">
+            <option value="all">すべて</option>
+            ${STEPS.map((s,idx)=>`<option value="${idx}">${statusFilterLabel(idx)}</option>`).join('')}
+          </select>
+        </div>
+        <button class="btn-ghost" id="filter-reset">条件をクリア</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <table class="case-table">
+        <thead><tr>
+          <th>顧客名</th><th>契約形態</th><th>現在のステータス</th><th>合計利益</th><th>アラート</th><th></th>
+        </tr></thead>
+        <tbody id="case-tbody"></tbody>
+      </table>
+    </div>
+  `;
+  // フィルタ入力の値を反映(セレクトはinnerHTML後にselectedを付け直す)
+  document.getElementById('filter-contract').value = state.listFilters.contractType;
+  document.getElementById('filter-status').value = state.listFilters.status;
+
+  document.getElementById('filter-keyword').addEventListener('input', e=>{
+    state.listFilters.keyword = e.target.value; renderTableRows();
+  });
+  document.getElementById('filter-contract').addEventListener('change', e=>{
+    state.listFilters.contractType = e.target.value; renderTableRows();
+  });
+  document.getElementById('filter-status').addEventListener('change', e=>{
+    state.listFilters.status = e.target.value; renderTableRows();
+  });
+  document.getElementById('filter-reset').addEventListener('click', ()=>{
+    state.listFilters = { contractType:'all', status:'all', keyword:'' };
+    renderList();
+  });
+
+  renderTableRows();
+}
+
+function renderTableRows(){
+  const tbody = document.getElementById('case-tbody');
+  const rows = filteredCases();
+  const allAlerts = visibleAlerts(state.cases);
+
+  if(rows.length === 0){
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state">条件に一致する案件がありません</div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = rows.map(c => {
+    const t = caseTotals(c);
+    const ongoing = c.currentStepIndex >= ONGOING_INDEX;
+    const caseAlerts = allAlerts.filter(a=>a.caseId===c.id);
+    const lvl = worstLevel(caseAlerts);
+    return `
+      <tr class="row">
+        <td class="cust-name" data-open="${c.id}">${escapeHtml(c.customerName)}</td>
+        <td data-label="契約形態"><span class="pill type-${c.contractType}">${c.contractType}</span></td>
+        <td data-label="ステータス" class="status-txt ${ongoing?'ongoing':''}">${statusLabel(c.currentStepIndex)}</td>
+        <td data-label="合計利益" class="money-cell ${t.profit>=0?'pos':'neg'}">${fmtMoney(t.profit)}</td>
+        <td data-label="アラート">
+          ${caseAlerts.length ? `
+            <label class="alert-check level-${lvl}">
+              <input type="checkbox" data-ack="${c.id}" />
+              ⚠ ${caseAlerts.length}件（確認して消す）
+            </label>
+          ` : '—'}
+        </td>
+        <td class="row-actions">
+          <button class="btn-small" data-open="${c.id}">開く</button>
+          <button class="btn-small" data-dup="${c.id}">複製</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  tbody.querySelectorAll('[data-open]').forEach(el => el.addEventListener('click', () => openDetail(el.dataset.open)));
+  tbody.querySelectorAll('[data-ack]').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if(el.checked){ dismissCaseAlerts(el.dataset.ack); renderTableRows(); }
+    });
+  });
+  tbody.querySelectorAll('[data-dup]').forEach(el => {
+    el.addEventListener('click', (e) => { e.stopPropagation(); duplicateCase(el.dataset.dup); });
+  });
+}
+
+function duplicateCase(caseId){
+  const orig = state.cases.find(c => c.id === caseId);
+  if(!orig) return;
+  const copy = deepClone(orig);
+  copy.id = uid('case');
+  copy.customerName = orig.customerName + '（コピー）';
+  copy.currentStepIndex = 0;
+  copy.kickoffDate = '';
+  copy.agencyContractSigned = false;
+  copy.accountId = ''; copy.accountPw = '';
+  copy.basePlan.id = uid('item');
+  copy.basePlan.kickoffDate = '';
+  copy.options = copy.options.map(o => ({ ...o, id: uid('item'), kickoffDate: '' }));
+  copy.logs = [];
+  state.cases.unshift(copy);
+  showToast(`「${orig.customerName}」を複製しました（金額はそのまま、進捗・メモは初期化されます）`);
+  renderTableRows();
+  document.querySelector('.page-sub').textContent = `全 ${state.cases.length} 件`;
+}
+
+/* =========================================================
+   RENDER: DETAIL（state.draft を編集し、保存ボタンでcasesへ確定）
+   ========================================================= */
+function isDraftDirty(){
+  if(!state.draft) return false;
+  if(state.isNewCase) return true;
+  return JSON.stringify(state.draft) !== state.savedSnapshot;
+}
+function saveDraft(){
+  if(state.isNewCase){
+    state.cases.unshift(deepClone(state.draft));
+    state.isNewCase = false;
+  } else {
+    const idx = state.cases.findIndex(c => c.id === state.draft.id);
+    if(idx >= 0) state.cases[idx] = deepClone(state.draft);
+  }
+  state.savedSnapshot = JSON.stringify(state.draft);
+  showToast('データベースへ保存しました');
+  renderDetail();
+}
+function updateSaveIndicator(){
+  const el = document.getElementById('save-indicator');
+  const btn = document.getElementById('btn-save');
+  if(!el || !btn) return;
+  const dirty = isDraftDirty();
+  el.textContent = dirty ? '● 未保存の変更があります' : '✓ 保存済み';
+  el.classList.toggle('dirty', dirty);
+  btn.disabled = !dirty;
+}
+
+function renderDetail(){
+  const c = state.draft;
+  const main = document.getElementById('main');
+  if(!c){ main.innerHTML = `<div class="empty-state">案件が見つかりません</div>`; return; }
+
+  const isAgency = c.contractType === '代理店';
+  const ongoing = c.currentStepIndex >= ONGOING_INDEX;
+
+  main.innerHTML = `
+    <div class="detail-header">
+      <div>
+        <input class="name-input" id="f-name" value="${escapeAttr(c.customerName)}" />
+        <div class="page-sub" style="margin-top:6px;">${state.isNewCase ? '未保存の新規案件' : `案件ID: ${c.id}`}</div>
+      </div>
+      <div class="header-actions">
+        <span class="save-indicator" id="save-indicator"></span>
+        <button class="btn-primary" id="btn-save">保存する</button>
+        <button class="btn-ghost" id="btn-back">← 一覧へ戻る</button>
+        ${state.isNewCase ? '' : `<button class="btn-danger-ghost" id="btn-delete">案件を削除</button>`}
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px;">
+      <h3 class="section-h">進捗ステータス ${ongoing ? '<span style="color:var(--rail-ongoing);font-weight:700;">（現在：契約中・継続課金中）</span>' : ''}</h3>
+      <div class="rail" id="rail"></div>
+    </div>
+
+    <div class="grid-2">
+      <div>
+        <div class="card" style="margin-bottom:16px;">
+          <h3 class="section-h">契約形態</h3>
+          <div class="radio-group">
+            ${['通常','代理店','補助金'].map(t => `
+              <label class="radio-opt">
+                <input type="radio" name="contractType" value="${t}" ${c.contractType===t?'checked':''}/> ${t}
+              </label>
+            `).join('')}
+          </div>
+          ${isAgency ? `
+            <label class="agency-check ${c.agencyContractSigned?'':'unsigned'}">
+              <input type="checkbox" id="f-agency-signed" ${c.agencyContractSigned?'checked':''}/>
+              契約書締結済み ${c.agencyContractSigned ? '（確認済み — 次のステップに進行可能）' : '（未確認 — ステップ1以降に進めません）'}
+            </label>
+          ` : ''}
+        </div>
+
+        <div class="card" style="margin-bottom:16px;">
+          <h3 class="section-h">導入スタート日・アカウント情報</h3>
+          <div class="field-row two">
+            <div class="field">
+              <label>導入スタート日（★以降の期日を自動算出）</label>
+              <input type="date" id="f-kickoff" value="${c.kickoffDate||''}" />
+            </div>
+            <div class="field"></div>
+          </div>
+          <div class="account-box">
+            <div class="field" style="flex:1"><label>ログインID</label><input type="text" id="f-account-id" value="${escapeAttr(c.accountId||'')}" placeholder="未発行"/></div>
+            <div class="field" style="flex:1"><label>パスワード</label><input type="text" id="f-account-pw" value="${escapeAttr(c.accountPw||'')}" placeholder="未発行"/></div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:16px;">
+          <h3 class="section-h">メモ・履歴</h3>
+          <div id="log-list">${renderLogs(c)}</div>
+          <div class="log-add-row">
+            <input type="date" id="new-log-date" value="${toISO(today)}" />
+            <input type="text" id="new-log-text" placeholder="例：お客様からの返信待ち／Google連携エラー対応中" />
+            <button class="btn-primary" id="btn-add-log">追加</button>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:16px;">
+          <h3 class="section-h">基本プラン（AIO）※必須</h3>
+          ${renderPlanCard(c.basePlan, 'base')}
+        </div>
+
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <h3 class="section-h" style="margin:0;">オプション</h3>
+          </div>
+          ${c.options.map(o => renderPlanCard(o, 'opt')).join('') || `<div class="alert-empty" style="margin-bottom:12px;">追加されているオプションはありません</div>`}
+          <div class="add-opt-row">
+            <select id="new-opt-category">
+              <option value="AI広告">AI広告</option>
+              <option value="インスタ自動投稿">インスタ自動投稿</option>
+            </select>
+            <button class="btn-primary" id="btn-add-opt">＋ オプションを追加</button>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card totals-sticky" id="totals-panel"></div>
+      </div>
+    </div>
+  `;
+
+  renderRail(c);
+  renderTotals(c);
+  updateSaveIndicator();
+
+  // ---- header events ----
+  document.getElementById('btn-back').addEventListener('click', ()=> goTo('list'));
+  document.getElementById('btn-save').addEventListener('click', saveDraft);
+  const delBtn = document.getElementById('btn-delete');
+  if(delBtn) delBtn.addEventListener('click', ()=>{
+    if(confirm('この案件を削除しますか？（この操作は保存確認なしで即時反映されます）')){
+      state.cases = state.cases.filter(x=>x.id!==c.id);
+      state.draft = null;
+      state.view='list'; render();
+    }
+  });
+  document.getElementById('f-name').addEventListener('input', e=>{ c.customerName = e.target.value; updateSaveIndicator(); });
+
+  // ---- contract type ----
+  document.querySelectorAll('input[name=contractType]').forEach(r=>{
+    r.addEventListener('change', e=>{ c.contractType = e.target.value; renderDetail(); });
+  });
+  const agencyCb = document.getElementById('f-agency-signed');
+  if(agencyCb) agencyCb.addEventListener('change', e=>{ c.agencyContractSigned = e.target.checked; renderDetail(); });
+
+  // ---- kickoff date ----
+  document.getElementById('f-kickoff').addEventListener('change', e=>{ c.kickoffDate = e.target.value; renderRail(c); updateSaveIndicator(); });
+
+  // ---- account ----
+  document.getElementById('f-account-id').addEventListener('input', e=>{ c.accountId = e.target.value; updateSaveIndicator(); });
+  document.getElementById('f-account-pw').addEventListener('input', e=>{ c.accountPw = e.target.value; updateSaveIndicator(); });
+
+  // ---- logs ----
+  document.getElementById('btn-add-log').addEventListener('click', ()=>{
+    const dateEl = document.getElementById('new-log-date');
+    const textEl = document.getElementById('new-log-text');
+    if(!textEl.value.trim()) return;
+    c.logs.push(makeLog(dateEl.value || toISO(today), textEl.value.trim()));
+    renderDetail();
+  });
+  document.querySelectorAll('[data-remove-log]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ c.logs = c.logs.filter(l=>l.id!==btn.dataset.removeLog); renderDetail(); });
+  });
+
+  // ---- plan cards ----
+  bindPlanCardEvents(c);
+
+  // ---- add option ----
+  document.getElementById('btn-add-opt').addEventListener('click', ()=>{
+    const cat = document.getElementById('new-opt-category').value;
+    const defaultPlan = PLAN_OPTIONS[cat][0];
+    c.options.push(makeItem(cat, defaultPlan, c.kickoffDate || '', 0,0,0,0));
+    renderDetail();
+  });
+}
+
+function renderLogs(c){
+  if(!c.logs || c.logs.length === 0) return `<div class="alert-empty">まだメモはありません</div>`;
+  return c.logs.slice().sort((a,b)=> b.date.localeCompare(a.date)).map(l => `
+    <div class="log-row">
+      <div><span class="log-date">${l.date}</span><span class="log-text">${escapeHtml(l.text)}</span></div>
+      <button class="remove-opt" data-remove-log="${l.id}">削除</button>
+    </div>
+  `).join('');
+}
+
+function renderPlanCard(item, kind){
+  const planChoices = PLAN_OPTIONS[item.category];
+  const profit = lineProfit(item);
+  return `
+    <div class="plan-card" data-item-id="${item.id}">
+      <div class="plan-card-head">
+        <span class="plan-card-title" data-plan-title="${item.id}">${itemLabel(item)}${kind==='base' ? '<span class="req-tag">必須</span>' : ''}</span>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span class="plan-profit-tag ${profit>=0?'v pos':'v neg'}" data-line-profit="${item.id}">月額利益 ${fmtMoney(profit)}</span>
+          ${kind==='opt' ? `<button class="remove-opt" data-remove-opt="${item.id}">削除</button>` : ''}
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>${item.category} のプラン</label>
+          <select data-field="planType" data-item="${item.id}">
+            ${planChoices.map(p => `<option value="${p}" ${item.planType===p?'selected':''}>${p}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field">
+          <label>導入日</label>
+          <input type="date" data-field="kickoffDate" data-item="${item.id}" value="${item.kickoffDate||''}" />
+        </div>
+        <div class="field">
+          <label>月額売上金額（円）</label>
+          <input type="number" step="1000" data-field="revenue" data-item="${item.id}" value="${item.revenue||0}" />
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>原価：志村さん報酬</label>
+          <input type="number" step="1000" data-field="costShimura" data-item="${item.id}" value="${item.costShimura||0}" />
+        </div>
+        <div class="field">
+          <label>原価：JINさん報酬</label>
+          <input type="number" step="1000" data-field="costJin" data-item="${item.id}" value="${item.costJin||0}" />
+        </div>
+        <div class="field">
+          <label>原価：その他外注費</label>
+          <input type="number" step="1000" data-field="costOther" data-item="${item.id}" value="${item.costOther||0}" />
+        </div>
+      </div>
+      ${kind==='base' ? `
+        <div class="setup-fee-block">
+          <div class="field-row two">
+            <div class="field">
+              <label>初期費用（単発・導入月のみ計上）— 売上金額</label>
+              <input type="number" step="1000" data-field="setupFeeRevenue" data-item="${item.id}" value="${item.setupFeeRevenue||0}" />
+            </div>
+            <div class="field">
+              <label>初期費用 — 原価（実費など）</label>
+              <input type="number" step="1000" data-field="setupFeeCost" data-item="${item.id}" value="${item.setupFeeCost||0}" />
+            </div>
+          </div>
+          <div class="setup-fee-note" data-setup-profit="${item.id}">
+            初期費用の利益：${fmtMoney((item.setupFeeRevenue||0)-(item.setupFeeCost||0))}（志村さん・JINさんへの報酬は初期費用には発生しません）
+          </div>
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function findItemById(c, itemId){
+  if(c.basePlan.id === itemId) return c.basePlan;
+  return c.options.find(o => o.id === itemId);
+}
+
+function bindPlanCardEvents(c){
+  document.querySelectorAll('[data-field][data-item]').forEach(el => {
+    const evt = (el.tagName === 'SELECT') ? 'change' : (el.type === 'date' ? 'change' : 'input');
+    el.addEventListener(evt, e => {
+      const item = findItemById(c, el.dataset.item);
+      if(!item) return;
+      const field = el.dataset.field;
+      if(['revenue','costShimura','costJin','costOther','setupFeeRevenue','setupFeeCost'].includes(field)){
+        item[field] = parseFloat(el.value) || 0;
+      } else {
+        item[field] = el.value;
+      }
+      // 軽量更新: 入力欄のフォーカスを保持するため、関連する表示だけをピンポイントで更新する
+      if(field === 'planType'){
+        const titleEl = document.querySelector(`[data-plan-title="${item.id}"]`);
+        if(titleEl) titleEl.innerHTML = `${itemLabel(item)}${item === c.basePlan ? '<span class="req-tag">必須</span>' : ''}`;
+      }
+      const tag = document.querySelector(`[data-line-profit="${item.id}"]`);
+      if(tag){
+        const p = lineProfit(item);
+        tag.textContent = `月額利益 ${fmtMoney(p)}`;
+        tag.classList.toggle('pos', p>=0);
+        tag.classList.toggle('neg', p<0);
+      }
+      if(field === 'setupFeeRevenue' || field === 'setupFeeCost'){
+        const note = document.querySelector(`[data-setup-profit="${item.id}"]`);
+        if(note) note.textContent = `初期費用の利益：${fmtMoney((item.setupFeeRevenue||0)-(item.setupFeeCost||0))}（志村さん・JINさんへの報酬は初期費用には発生しません）`;
+      }
+      renderTotals(c);
+      updateSaveIndicator();
+    });
+  });
+  document.querySelectorAll('[data-remove-opt]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      c.options = c.options.filter(o => o.id !== btn.dataset.removeOpt);
+      renderDetail();
+    });
+  });
+}
+
+function renderTotals(c){
+  const panel = document.getElementById('totals-panel');
+  const t = caseTotals(c);
+  panel.innerHTML = `
+    <h3 class="section-h">損益サマリー（リアルタイム）</h3>
+    <div class="totals-line"><span class="l">合計売上（月額＋初期費用）</span><span class="v">${fmtMoney(t.revenue)}</span></div>
+    <div class="totals-line"><span class="l">合計原価（月額＋初期費用）</span><span class="v">${fmtMoney(t.cost)}</span></div>
+    <div class="totals-line final"><span class="l">最終利益</span><span class="v ${t.profit>=0?'pos':'neg'}">${fmtMoney(t.profit)}</span></div>
+    <div style="margin-top:14px; padding-top:14px; border-top:1px solid var(--line);">
+      <div class="page-sub" style="margin:0 0 8px;">内訳</div>
+      ${t.items.map(i => `
+        <div style="display:flex; justify-content:space-between; font-size:12.5px; padding:4px 0; color:var(--ink-soft);">
+          <span>${itemLabel(i)}（月額）</span>
+          <span style="font-family:var(--font-mono);">${fmtMoney(lineProfit(i))}</span>
+        </div>
+      `).join('')}
+      <div style="display:flex; justify-content:space-between; font-size:12.5px; padding:4px 0; color:var(--ink-soft);">
+        <span>基本(AIO)：初期費用（単発）</span>
+        <span style="font-family:var(--font-mono);">${fmtMoney(t.setupFee.profit)}</span>
+      </div>
+    </div>
+    <div class="page-sub" style="margin-top:12px; padding-top:12px; border-top:1px solid var(--line);">
+      入力内容はまだ確定していません。反映するには上部の「保存する」を押してください。
+    </div>
+  `;
+}
+
+function renderRail(c){
+  const rail = document.getElementById('rail');
+  const dl = c.kickoffDate ? computeDeadlines(c.kickoffDate) : null;
+  const dateFor = idx => {
+    if(idx===6) return c.kickoffDate ? parseISO(c.kickoffDate) : null;
+    if(!dl) return null;
+    if(idx===7) return dl.monthEnd;
+    if(idx===8) return dl.invoiceDate;
+    if(idx===9) return dl.firstPaymentDate;
+    if(idx===10) return nextMonthly20(today);
+    if(idx===11) return dl.reportDate;
+    return null;
+  };
+  rail.innerHTML = STEPS.map((s, idx) => {
+    const isOngoingStep = idx === ONGOING_INDEX;
+    const status = idx < c.currentStepIndex ? 'done' : (idx === c.currentStepIndex ? (isOngoingStep ? 'ongoing' : 'current') : 'future');
+    const date = dateFor(idx);
+    let dateClass = '';
+    if(date && status !== 'done' && !isOngoingStep){
+      const diff = Math.round((date-today)/86400000);
+      if(diff <= 0) dateClass = 'overdue'; else if(diff<=3) dateClass = 'soon';
+    }
+    return `
+      <div class="rail-step ${status}" data-step-idx="${idx}">
+        <div class="rail-line ${idx<=c.currentStepIndex && idx>0 ? 'done':''}"></div>
+        <div class="rail-dot ${status}">${status==='done'?'✓':(isOngoingStep?'◎':(idx===0?'':idx))}</div>
+        <div class="rail-label">${s.label}</div>
+        ${date ? `<div class="rail-date ${dateClass}">${fmtDate(date)}</div>` : ''}
+      </div>
+    `;
+  }).join('');
+
+  rail.querySelectorAll('[data-step-idx]').forEach(el => {
+    el.addEventListener('click', () => {
+      const idx = parseInt(el.dataset.stepIdx, 10);
+      if(c.contractType === '代理店' && !c.agencyContractSigned && idx > 0){
+        alert('代理店契約の締結確認が完了するまで、ステップ1以降には進めません。');
+        return;
+      }
+      c.currentStepIndex = idx;
+      renderRail(c);
+      updateSaveIndicator();
+    });
+  });
+}
+
+/* =========================================================
+   UTIL
+   ========================================================= */
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function escapeAttr(s){ return escapeHtml(s); }
+
+render();
+</script>
+</body>
+</html>
