@@ -85,6 +85,8 @@
     cursor:pointer; font-family: var(--font-body);
   }
   .new-case-btn:hover{ background: var(--brand-dark); }
+  .sidebar-footer .btn-ghost{ color: rgba(255,255,255,0.7); border-color: rgba(255,255,255,0.22); font-size:12px; padding:8px 12px; }
+  .sidebar-footer .btn-ghost:hover{ color:#fff; border-color: rgba(255,255,255,0.5); }
 
   /* ---------- Main ---------- */
   main{ flex:1; min-width:0; padding: 28px 36px 60px; max-width: 1180px; }
@@ -431,6 +433,31 @@ function computeDeadlines(kickoffISO){
 }
 function uid(prefix){ return prefix + '_' + Math.random().toString(36).slice(2,9); }
 
+/* =========================================================
+   永続化(localStorage) — GitHub Pages等の静的ホスティングでも
+   ブラウザ内にデータが残るようにする。リロードしても消えない。
+   ========================================================= */
+const STORAGE_KEY = 'cocosystem_pm_cases_v1';
+function loadCasesFromStorage(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return null;
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : null;
+  }catch(e){
+    console.error('COCOSystem PM: 保存データの読み込みに失敗しました', e);
+    return null;
+  }
+}
+function saveCasesToStorage(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.cases));
+  }catch(e){
+    console.error('COCOSystem PM: 保存に失敗しました', e);
+    showToast('保存に失敗しました（ブラウザのストレージ容量をご確認ください）');
+  }
+}
+
 function showToast(msg){
   const host = document.getElementById('toast-host');
   const el = document.createElement('div');
@@ -512,17 +539,7 @@ function makeItem(category, planType, kickoffDate, revenue, shimura, jin, other,
 }
 function makeLog(date, text){ return { id: uid('log'), date, text }; }
 
-let state = {
-  view: 'dashboard',
-  selectedId: null,
-  draft: null,
-  isNewCase: false,
-  savedSnapshot: null,
-  dismissedAlerts: new Set(),
-  listFilters: { contractType:'all', status:'all', keyword:'' },
-  listFilterOpen: false,
-  dashboardPeriod: 12,
-  cases: [
+const SEED_CASES = [
     {
       id: uid('case'), customerName: '株式会社サンライズ商事', contractType: '通常', agencyContractSigned: false,
       currentStepIndex: 9, kickoffDate: '2026-06-15',
@@ -558,7 +575,19 @@ let state = {
       options: [],
       logs: [ makeLog('2026-07-16','Google連携エラー対応中。サポートへ問い合わせ済み。') ],
     },
-  ],
+];
+
+let state = {
+  view: 'dashboard',
+  selectedId: null,
+  draft: null,
+  isNewCase: false,
+  savedSnapshot: null,
+  dismissedAlerts: new Set(),
+  listFilters: { contractType:'all', status:'all', keyword:'' },
+  listFilterOpen: false,
+  dashboardPeriod: 12,
+  cases: loadCasesFromStorage() || deepClone(SEED_CASES), // 保存データがあればそれを復元、なければサンプルデータ
 };
 
 /* =========================================================
@@ -678,6 +707,7 @@ function render(){
       <div class="nav-item ${state.view==='list'||state.view==='detail'?'active':''}" data-nav="list">${icon('list',16)} 案件一覧</div>
       <div class="sidebar-footer">
         <button class="new-case-btn" id="btn-new-case">${icon('plus',15)} 新規案件を登録</button>
+        <button class="btn-ghost" id="btn-reset-data" style="width:100%; margin-top:8px; justify-content:center;">初期データにリセット</button>
       </div>
     </div>
     <main id="main"></main>
@@ -688,6 +718,16 @@ function render(){
       if(!confirm('保存されていない変更があります。破棄して新規案件を作成しますか？')) return;
     }
     createNewCase();
+  });
+  document.getElementById('btn-reset-data').addEventListener('click', () => {
+    if(confirm('この端末に保存されているすべての案件データを削除し、サンプルデータに戻します。よろしいですか？（元に戻せません）')){
+      state.cases = deepClone(SEED_CASES);
+      saveCasesToStorage();
+      state.draft = null; state.isNewCase = false;
+      state.view = 'dashboard';
+      render();
+      showToast('サンプルデータにリセットしました');
+    }
   });
 
   if(state.view === 'dashboard') renderDashboard();
@@ -987,19 +1027,16 @@ function renderCaseList(){
 function duplicateCase(caseId){
   const orig = state.cases.find(c => c.id === caseId);
   if(!orig) return;
+  // 導入日を含め、元の案件のすべての項目をそのまま複製する(id関連のみ重複回避のため採番し直す)
   const copy = deepClone(orig);
   copy.id = uid('case');
   copy.customerName = orig.customerName + '（コピー）';
-  copy.currentStepIndex = 0;
-  copy.kickoffDate = '';
-  copy.agencyContractSigned = false;
-  copy.accountId = ''; copy.accountPw = '';
   copy.basePlan.id = uid('item');
-  copy.basePlan.kickoffDate = '';
-  copy.options = copy.options.map(o => ({ ...o, id: uid('item'), kickoffDate: '' }));
-  copy.logs = [];
+  copy.options = copy.options.map(o => ({ ...o, id: uid('item') }));
+  copy.logs = (copy.logs || []).map(l => ({ ...l, id: uid('log') }));
   state.cases.unshift(copy);
-  showToast(`「${orig.customerName}」を複製しました`);
+  saveCasesToStorage();
+  showToast(`「${orig.customerName}」を複製しました（導入日を含むすべての項目をそのままコピーしました）`);
   renderList();
 }
 
@@ -1020,7 +1057,8 @@ function saveDraft(){
     if(idx >= 0) state.cases[idx] = deepClone(state.draft);
   }
   state.savedSnapshot = JSON.stringify(state.draft);
-  showToast('データベースへ保存しました');
+  saveCasesToStorage();
+  showToast('保存しました（このブラウザに記録されるため、リロードしても消えません）');
   renderDetail();
 }
 function updateSaveIndicator(){
@@ -1140,6 +1178,7 @@ function renderDetail(){
   if(delBtn) delBtn.addEventListener('click', ()=>{
     if(confirm('この案件を削除しますか？（この操作は保存確認なしで即時反映されます）')){
       state.cases = state.cases.filter(x=>x.id!==c.id);
+      saveCasesToStorage();
       state.draft = null;
       state.view='list'; render();
     }
