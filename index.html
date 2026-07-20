@@ -8,40 +8,44 @@
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
 
   :root{
-    --bg: #F5F7F9;
+    --bg: #F9FAFB;           /* gray-50 */
     --surface: #FFFFFF;
-    --surface-2: #EEF1F4;
+    --surface-2: #F1F2F5;
     --ink: #16202B;
     --ink-soft: #5B6B7A;
     --ink-faint: #93A0AC;
-    --line: #E1E6EB;
-    --brand: #2B5C8A;
-    --brand-dark: #1E4160;
-    --brand-tint: #E7EEF5;
-    --profit: #1E8A63;
-    --profit-tint: #E4F4EC;
-    --warn: #B58900;        /* 黄色系の注意色（期日3日以内） */
+    --line: #E7E9EC;
+    --brand: #7C3AED;        /* violet-600：メインアクセント(紫) */
+    --brand-dark: #6D28D9;
+    --brand-tint: #F0EBFE;
+    --profit: #059669;       /* エメラルドグリーン系：利益グラフ用に統一 */
+    --profit-tint: #D1FAE5;
+    --warn: #B58900;         /* 黄（期日3日以内）※維持 */
     --warn-tint: #FBF1CC;
-    --danger: #C1443B;      /* 赤（期日超過・当日） */
+    --danger: #C1443B;       /* 赤（期日超過・当日）※維持 */
     --danger-tint: #FBE7E5;
-    --rail-done: #1E8A63;
-    --rail-current: #2B5C8A;
-    --rail-future: #D6DCE2;
+    --rail-done: #059669;
+    --rail-current: #7C3AED;
+    --rail-future: #DEE1E6;
     --rail-ongoing: #6B4FA0;
+    --cost-other: #1D4ED8;   /* ブルー系の濃淡で統一：①原価(最も濃い) */
+    --cost-shimura: #3B82F6; /* ②志村さん(中間) */
+    --cost-jin: #93C5FD;     /* ③JIN(最も薄い) */
     --font-display: 'Space Grotesk', 'Inter', sans-serif;
     --font-body: 'Inter', sans-serif;
     --font-mono: 'IBM Plex Mono', monospace;
   }
 
   *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
+  html,body{margin:0;padding:0; width:100%; overflow-x:hidden;}
   body{
     font-family: var(--font-body);
     background: var(--bg);
     color: var(--ink);
     -webkit-font-smoothing: antialiased;
   }
-  #app{display:flex; min-height:100vh;}
+  #app{display:flex; min-height:100vh; width:100%; max-width:100%;}
+  .icon{ vertical-align:-3px; flex-shrink:0; }
 
   /* ---------- Sidebar ---------- */
   .sidebar{
@@ -61,56 +65,79 @@
   }
   .brand-mark{
     width:26px; height:26px; border-radius:7px;
-    background: linear-gradient(135deg, var(--brand) 0%, #5B9BC7 100%);
+    background: linear-gradient(135deg, var(--brand) 0%, #A78BFA 100%);
     display:flex; align-items:center; justify-content:center;
     font-size:13px; font-weight:700; color:#fff; flex-shrink:0;
   }
   .nav-item{
     display:flex; align-items:center; gap:10px;
     padding: 10px 12px; border-radius:8px; cursor:pointer;
-    font-size:14px; font-weight:500; color: rgba(255,255,255,0.72);
+    font-size:14px; font-weight:500; color: rgba(255,255,255,0.68);
     margin-bottom:2px; transition: background .12s ease, color .12s ease;
   }
   .nav-item:hover{ background: rgba(255,255,255,0.06); color:#fff; }
-  .nav-item.active{ background: rgba(255,255,255,0.1); color:#fff; }
-  .nav-icon{ width:16px; text-align:center; opacity:0.9; font-size:14px; }
+  .nav-item.active{ background: rgba(124,58,237,0.38); color:#fff; box-shadow: inset 3px 0 0 var(--brand); }
   .sidebar-footer{ margin-top:auto; padding-top:16px; border-top:1px solid rgba(255,255,255,0.1); }
   .new-case-btn{
-    width:100%; padding:10px 12px; border-radius:8px; border:1px dashed rgba(255,255,255,0.3);
-    background: transparent; color: rgba(255,255,255,0.85); font-size:13px; font-weight:600;
+    width:100%; display:flex; align-items:center; justify-content:center; gap:7px;
+    padding: 10px 12px; border-radius:8px; border:none;
+    background: var(--brand); color:#fff; font-size:13px; font-weight:600;
     cursor:pointer; font-family: var(--font-body);
   }
-  .new-case-btn:hover{ background: rgba(255,255,255,0.08); }
+  .new-case-btn:hover{ background: var(--brand-dark); }
 
   /* ---------- Main ---------- */
-  main{ flex:1; padding: 28px 36px 60px; max-width: 1180px; min-width:0; }
-  .page-title{ font-family: var(--font-display); font-weight:700; font-size:22px; margin:0 0 3px; }
-  .page-sub{ color:var(--ink-soft); font-size:13.5px; margin:0 0 24px; }
+  main{ flex:1; min-width:0; padding: 28px 36px 60px; max-width: 1180px; }
+  .page-title{ font-family: var(--font-display); font-weight:700; font-size:22px; margin:0 0 3px; overflow-wrap:anywhere; display:flex; align-items:center; gap:9px; }
+  .page-title .icon{ color: var(--brand); }
+  .page-sub{ color:var(--ink-soft); font-size:13.5px; margin:0 0 24px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .intro-badge{
+    display:inline-flex; align-items:center; gap:5px; background: var(--brand-tint); color:var(--brand-dark);
+    font-weight:700; font-size:12px; padding:3px 10px; border-radius:20px;
+  }
+  .footnote{ font-size:11px; color:var(--ink-faint); margin:10px 0 0; }
 
-  .card{ background: var(--surface); border:1px solid var(--line); border-radius:12px; padding: 20px 22px; }
+  .card{ background: var(--surface); border:1px solid var(--line); border-radius:14px; padding: 20px 22px; min-width:0; }
   .grid-2{ display:grid; grid-template-columns: 1.55fr 1fr; gap:18px; align-items:start; }
+  .grid-2 > div{ min-width:0; }
 
   /* KPI */
   .kpi-row{ display:grid; grid-template-columns: repeat(4,1fr); gap:14px; margin-bottom:18px; }
-  .kpi{ background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:15px 17px; }
-  .kpi-label{ font-size:12px; color:var(--ink-soft); font-weight:600; letter-spacing:.2px; margin-bottom:8px;}
-  .kpi-value{ font-family: var(--font-mono); font-size:21px; font-weight:600; }
-  .kpi-value.profit{ color: var(--profit); }
+  .kpi{ border-radius:14px; padding:16px 18px; min-width:0; position:relative; overflow:hidden; }
+  .kpi.kpi-plain{ background:var(--surface); border:1px solid var(--line); }
+  .kpi.kpi-blue{ background: linear-gradient(135deg,#60A5FA,#22D3EE); box-shadow:0 10px 24px -10px rgba(34,211,238,0.55); }
+  .kpi.kpi-green{ background: linear-gradient(135deg,#34D399,#10B981); box-shadow:0 10px 24px -10px rgba(16,185,129,0.5); }
+  .kpi.kpi-pink{ background: linear-gradient(135deg,#FB923C,#F472B6); box-shadow:0 10px 24px -10px rgba(244,114,182,0.5); }
+  .kpi-icon{ position:absolute; top:14px; right:14px; opacity:0.55; }
+  .kpi .kpi-icon.icon{ color:#fff; }
+  .kpi-plain .kpi-icon.icon{ color: var(--brand); opacity:0.8; }
+  .kpi-label{ font-size:12px; font-weight:600; letter-spacing:.2px; margin-bottom:8px; color:var(--ink-soft); }
+  .kpi-blue .kpi-label, .kpi-green .kpi-label, .kpi-pink .kpi-label{ color: rgba(255,255,255,0.88); }
+  .kpi-value{ font-family: var(--font-mono); font-size:21px; font-weight:600; overflow-wrap:anywhere; color:var(--ink); }
+  .kpi-blue .kpi-value, .kpi-green .kpi-value, .kpi-pink .kpi-value{ color:#fff; }
   .kpi-value.danger{ color: var(--danger); }
 
-  h3.section-h{ font-family: var(--font-display); font-size:14.5px; font-weight:700; margin:0 0 14px; }
+  h3.section-h{ font-family: var(--font-display); font-size:14.5px; font-weight:700; margin:0 0 14px; display:flex; align-items:center; gap:8px; }
+  h3.section-h .icon{ color: var(--brand); }
 
   /* Chart */
-  .chart-wrap{ overflow-x:auto; }
-  .chart{ display:flex; align-items:flex-end; gap:22px; height:200px; padding: 6px 6px 0; min-width: 420px; }
-  .chart-col{ display:flex; flex-direction:column; align-items:center; gap:8px; width:46px; flex-shrink:0; }
+  .chart-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; width:100%; }
+  .chart{ display:flex; align-items:flex-end; gap:18px; height:200px; padding: 6px 6px 0; min-width: max-content; }
+  .chart-col{ display:flex; flex-direction:column; align-items:center; gap:6px; width:66px; flex-shrink:0; }
   .chart-bars{ display:flex; align-items:flex-end; gap:4px; height:150px; }
-  .bar{ width:16px; border-radius:4px 4px 0 0; position:relative; }
+  .bar{ width:15px; border-radius:4px 4px 0 0; }
   .bar.revenue{ background: var(--brand-tint); border:1px solid var(--brand); border-bottom:none; }
-  .bar.cost{ background: #F0E6C4; border:1px solid var(--warn); border-bottom:none; }
   .bar.profit{ background: var(--profit); }
+  .stack-bar{ width:15px; display:flex; flex-direction:column-reverse; border-radius:4px 4px 0 0; overflow:hidden; }
+  .seg-other{ background: var(--cost-other); }
+  .seg-shimura{ background: var(--cost-shimura); border-top:1px solid rgba(255,255,255,0.55); }
+  .seg-jin{ background: var(--cost-jin); border-top:1px solid rgba(255,255,255,0.55); }
   .chart-month{ font-size:11px; color:var(--ink-soft); font-family:var(--font-mono); }
-  .chart-legend{ display:flex; gap:16px; margin-top:14px; font-size:12px; color:var(--ink-soft); flex-wrap:wrap; }
+  .margin-badge{ font-family:var(--font-mono); font-size:10.5px; font-weight:700; padding:2px 7px; border-radius:10px; }
+  .margin-badge.good{ background:var(--profit-tint); color:var(--profit); }
+  .margin-badge.ok{ background:var(--warn-tint); color:var(--warn); }
+  .margin-badge.bad{ background:var(--danger-tint); color:var(--danger); }
+  .chart-legend{ display:flex; gap:14px; margin-top:14px; font-size:12px; color:var(--ink-soft); flex-wrap:wrap; align-items:center; }
   .legend-dot{ width:9px; height:9px; border-radius:2px; display:inline-block; margin-right:5px; vertical-align:-1px;}
 
   .period-toggle{ display:flex; gap:6px; margin-bottom:14px; flex-wrap:wrap; }
@@ -122,72 +149,81 @@
   .period-btn.active{ background: var(--brand); border-color: var(--brand); color:#fff; }
   .period-note{ font-size:11.5px; color:var(--ink-faint); margin-bottom:10px; }
 
-  /* Alerts */
-  .alert-item{ display:flex; gap:10px; align-items:center; padding:10px 0; border-bottom:1px solid var(--line); }
+  /* Alerts（期日超過=赤／3日以内=黄 は維持） */
+  .alert-item{ display:flex; gap:10px; align-items:center; padding:10px 0; border-bottom:1px solid var(--line); min-width:0; }
   .alert-item:last-child{ border-bottom:none; }
-  .alert-main{ display:flex; gap:10px; align-items:flex-start; flex:1; cursor:pointer; min-width:0; }
+  .alert-main{ display:flex; gap:10px; align-items:flex-start; flex:1; min-width:0; cursor:pointer; }
   .alert-main:hover .alert-text{ color: var(--brand); }
   .alert-dot{ width:9px; height:9px; border-radius:50%; margin-top:5px; flex-shrink:0; }
   .alert-dot.danger{ background: var(--danger); box-shadow:0 0 0 3px var(--danger-tint); }
   .alert-dot.warning{ background: var(--warn); box-shadow:0 0 0 3px var(--warn-tint); }
-  .alert-text{ font-size:13px; line-height:1.5; color: var(--ink); }
+  .alert-text{ font-size:13px; line-height:1.5; color: var(--ink); overflow-wrap:anywhere; min-width:0; }
   .alert-empty{ color: var(--ink-faint); font-size:13px; padding: 6px 0; }
   .alert-ok-btn{
-    flex-shrink:0; background: var(--surface-2); border:1px solid var(--line); color:var(--ink-soft);
+    flex-shrink:0; display:inline-flex; align-items:center; gap:4px;
+    background: var(--surface-2); border:1px solid var(--line); color:var(--ink-soft);
     font-size:11.5px; font-weight:700; padding:5px 10px; border-radius:7px; cursor:pointer; font-family:var(--font-body);
   }
   .alert-ok-btn:hover{ background: var(--profit-tint); border-color:var(--profit); color:var(--profit); }
 
-  /* List view */
+  /* Buttons */
   .btn-primary{
+    display:inline-flex; align-items:center; gap:6px;
     background: var(--brand); color:#fff; border:none; padding:9px 15px; border-radius:8px;
     font-size:13.5px; font-weight:600; cursor:pointer; font-family:var(--font-body);
   }
   .btn-primary:hover{ background: var(--brand-dark); }
   .btn-primary:disabled{ background: var(--ink-faint); cursor:default; }
   .btn-ghost{
+    display:inline-flex; align-items:center; gap:6px;
     background:transparent; color: var(--ink-soft); border:1px solid var(--line); padding:8px 13px;
     border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:var(--font-body);
   }
-  .btn-ghost:hover{ border-color: var(--ink-faint); color: var(--ink); }
+  .btn-ghost:hover{ border-color: var(--brand); color: var(--brand); }
   .btn-danger-ghost{
+    display:inline-flex; align-items:center; gap:6px;
     background:transparent; color: var(--danger); border:1px solid var(--danger-tint); padding:8px 13px;
     border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:var(--font-body);
   }
   .btn-small{
+    display:inline-flex; align-items:center; gap:5px;
     background:transparent; color:var(--brand); border:1px solid var(--brand-tint); padding:5px 10px;
-    border-radius:7px; font-size:11.5px; font-weight:700; cursor:pointer; font-family:var(--font-body);
+    border-radius:7px; font-size:11.5px; font-weight:700; cursor:pointer; font-family:var(--font-body); flex-shrink:0;
   }
   .btn-small:hover{ background: var(--brand-tint); }
 
-  .filter-row{ display:grid; grid-template-columns: 2fr 1fr 1fr auto; gap:12px; align-items:end; }
-
-  table.case-table{ width:100%; border-collapse:collapse; }
-  table.case-table th{
-    text-align:left; font-size:11.5px; color:var(--ink-soft); font-weight:600; text-transform:uppercase;
-    letter-spacing:.3px; padding: 0 12px 10px; border-bottom:1px solid var(--line);
+  /* ---------- Filter accordion ---------- */
+  .filter-toggle-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+  .filter-toggle-btn{
+    display:flex; align-items:center; gap:7px; background:transparent; border:1px solid var(--line);
+    color:var(--ink); font-size:13px; font-weight:600; padding:8px 13px; border-radius:8px; cursor:pointer; font-family:var(--font-body);
   }
-  table.case-table td{ padding: 13px 12px; border-bottom:1px solid var(--line); font-size:13.5px; vertical-align:middle; }
-  table.case-table tr.row:hover{ background: var(--surface-2); }
-  .cust-name{ font-weight:600; cursor:pointer; }
-  .cust-name:hover{ color: var(--brand); }
-  .pill{ display:inline-block; padding:3px 9px; border-radius:20px; font-size:11.5px; font-weight:600; }
-  .pill.type-通常{ background:var(--surface-2); color:var(--ink-soft); }
-  .pill.type-代理店{ background:var(--brand-tint); color:var(--brand); }
-  .pill.type-補助金{ background:var(--profit-tint); color:var(--profit); }
-  .status-txt{ color: var(--ink-soft); }
-  .status-txt.ongoing{ color: var(--rail-ongoing); font-weight:700; }
-  .money-cell{ font-family: var(--font-mono); font-weight:600; }
-  .money-cell.pos{ color: var(--profit); }
-  .money-cell.neg{ color: var(--danger); }
-  .alert-check{ display:flex; align-items:center; gap:6px; font-size:11.5px; font-weight:700; cursor:pointer; }
-  .alert-check input{ cursor:pointer; }
-  .alert-check.level-danger{ color: var(--danger); }
-  .alert-check.level-warning{ color: var(--warn); }
-  .row-actions{ display:flex; gap:6px; }
+  .filter-toggle-btn:hover{ border-color:var(--brand); color:var(--brand); }
+  .filter-toggle-btn .icon{ color:var(--brand); }
+  .filter-badge{
+    background: var(--brand); color:#fff; font-size:10.5px; font-weight:700; border-radius:10px; padding:1px 7px;
+  }
+  .filter-row{ display:grid; grid-template-columns: 2fr 1fr 1fr auto; gap:12px; align-items:end; margin-top:14px; }
 
-  /* Progress rail — signature element */
-  .rail{ display:flex; overflow-x:auto; padding: 6px 2px 4px; gap:0; }
+  /* ---------- Case list (compact rows) ---------- */
+  .case-list{ display:flex; flex-direction:column; }
+  .case-row{ display:flex; align-items:center; gap:12px; padding:11px 4px; border-bottom:1px solid var(--line); min-width:0; }
+  .case-row:last-child{ border-bottom:none; }
+  .cr-name{
+    flex:1 1 auto; min-width:0; font-weight:600; font-size:14px; cursor:pointer;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .cr-name:hover{ color:var(--brand); }
+  .cr-status{
+    flex-shrink:0; font-size:12px; color:var(--ink-soft); max-width:160px;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .cr-status.ongoing{ color:var(--rail-ongoing); font-weight:700; }
+  .cr-profit{ flex-shrink:0; font-family:var(--font-mono); font-weight:700; font-size:13.5px; min-width:88px; text-align:right; }
+  .cr-profit.pos{ color:var(--profit); } .cr-profit.neg{ color:var(--danger); }
+
+  /* Progress rail */
+  .rail{ display:flex; overflow-x:auto; -webkit-overflow-scrolling:touch; padding: 6px 2px 4px; gap:0; width:100%; }
   .rail-step{ display:flex; flex-direction:column; align-items:center; min-width:96px; position:relative; cursor:pointer; }
   .rail-line{ position:absolute; top:11px; left:-50%; width:100%; height:2px; background:var(--rail-future); z-index:0;}
   .rail-step:first-child .rail-line{ display:none; }
@@ -207,26 +243,27 @@
   .rail-date.soon{ color:var(--warn); font-weight:700; }
 
   /* Detail form */
-  .detail-header{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px; gap:20px; flex-wrap:wrap; }
+  .detail-header{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px; gap:16px; flex-wrap:wrap; min-width:0; }
   .name-input{
     font-family:var(--font-display); font-size:22px; font-weight:700; border:none; background:transparent;
     padding:2px 0; border-bottom:1px solid transparent; width:340px; max-width:100%;
   }
   .name-input:focus{ outline:none; border-bottom:1px solid var(--brand); }
-  .header-actions{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+  .header-actions{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end; min-width:0; }
   .save-indicator{ font-size:11.5px; font-weight:600; color: var(--ink-faint); }
   .save-indicator.dirty{ color: var(--warn); }
 
   .field-row{ display:grid; grid-template-columns: repeat(3,1fr); gap:12px; margin-bottom:12px;}
   .field-row.two{ grid-template-columns: repeat(2,1fr); }
-  .field{ display:flex; flex-direction:column; gap:5px; }
-  .field label{ font-size:11.5px; font-weight:600; color:var(--ink-soft); }
+  .field{ display:flex; flex-direction:column; gap:5px; min-width:0; }
+  .field label{ font-size:11.5px; font-weight:600; color:var(--ink-soft); display:flex; align-items:center; gap:5px; }
+  .field label .icon{ color: var(--brand); opacity:0.85; }
   .field input, .field select{
     font-family: var(--font-body); font-size:13.5px; padding:8px 10px; border:1px solid var(--line);
     border-radius:7px; background:#fff; color:var(--ink); width:100%;
   }
   .field input[type=number], .field input[type=date]{ font-family: var(--font-mono); }
-  .field input:focus, .field select:focus{ outline:none; border-color: var(--brand); }
+  .field input:focus, .field select:focus{ outline:none; border-color: var(--brand); box-shadow:0 0 0 3px var(--brand-tint); }
 
   .radio-group{ display:flex; gap:16px; margin-bottom: 6px; flex-wrap:wrap; }
   .radio-opt{ display:flex; align-items:center; gap:6px; font-size:13.5px; cursor:pointer; }
@@ -236,24 +273,30 @@
   }
   .agency-check.unsigned{ background: var(--danger-tint); color: var(--danger); }
 
-  .plan-card{ border:1px solid var(--line); border-radius:10px; padding:14px 16px; margin-bottom:12px; background:#fbfcfd; }
+  .plan-card{ border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin-bottom:12px; background:#fbfbfd; min-width:0; }
   .plan-card-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px; }
-  .plan-card-title{ font-size:13px; font-weight:700; }
-  .plan-card-title .req-tag{ font-size:10px; font-weight:700; color:var(--brand); background:var(--brand-tint); padding:2px 6px; border-radius:5px; margin-left:7px; }
+  .plan-card-title{ font-size:13px; font-weight:700; display:flex; align-items:center; gap:6px; }
+  .plan-card-title .icon{ color:var(--brand); }
+  .plan-card-title .req-tag{ font-size:10px; font-weight:700; color:var(--brand); background:var(--brand-tint); padding:2px 6px; border-radius:5px; margin-left:3px; }
   .plan-profit-tag{ font-family:var(--font-mono); font-size:12.5px; font-weight:600; }
-  .remove-opt{ background:none; border:none; color:var(--ink-faint); cursor:pointer; font-size:12px; font-weight:600; }
+  .remove-opt{
+    display:inline-flex; align-items:center; gap:4px; background:none; border:none; color:var(--ink-faint);
+    cursor:pointer; font-size:12px; font-weight:600;
+  }
   .remove-opt:hover{ color: var(--danger); }
   .setup-fee-block{ margin-top:6px; padding-top:12px; border-top:1px dashed var(--line); }
   .setup-fee-note{ font-size:12px; color:var(--ink-soft); margin-top:6px; }
+  .autofill-note{ font-size:11px; color:var(--ink-faint); margin-top:-6px; margin-bottom:10px; display:flex; align-items:center; gap:5px; }
+  .autofill-note .icon{ color: var(--brand); }
 
   .add-opt-row{ display:flex; gap:10px; margin-top:6px; flex-wrap:wrap; }
   .add-opt-row select{ font-size:13px; padding:8px 10px; border:1px solid var(--line); border-radius:7px; }
 
   .totals-sticky{ position:sticky; top:20px; }
-  .totals-line{ display:flex; justify-content:space-between; align-items:baseline; padding:9px 0; border-bottom:1px solid var(--line); }
+  .totals-line{ display:flex; justify-content:space-between; align-items:baseline; padding:9px 0; border-bottom:1px solid var(--line); gap:10px; }
   .totals-line:last-child{ border-bottom:none; }
   .totals-line .l{ font-size:13px; color:var(--ink-soft); font-weight:600; }
-  .totals-line .v{ font-family:var(--font-mono); font-size:16px; font-weight:600; }
+  .totals-line .v{ font-family:var(--font-mono); font-size:16px; font-weight:600; overflow-wrap:anywhere; text-align:right; }
   .totals-line.final .v{ font-size:21px; }
   .totals-line.final .l{ font-size:13.5px; color:var(--ink); }
   .v.pos{ color:var(--profit); } .v.neg{ color:var(--danger); }
@@ -261,10 +304,10 @@
   .account-box{ display:flex; gap:12px; flex-wrap:wrap; }
   .empty-state{ text-align:center; padding: 60px 20px; color:var(--ink-faint); }
 
-  .log-row{ display:flex; justify-content:space-between; gap:10px; padding:8px 0; border-bottom:1px solid var(--line); align-items:flex-start; }
+  .log-row{ display:flex; justify-content:space-between; gap:10px; padding:8px 0; border-bottom:1px solid var(--line); align-items:flex-start; min-width:0; }
   .log-row:last-child{ border-bottom:none; }
   .log-date{ font-family:var(--font-mono); font-size:11.5px; color:var(--ink-faint); margin-right:8px; white-space:nowrap; }
-  .log-text{ font-size:13px; line-height:1.5; }
+  .log-text{ font-size:13px; line-height:1.5; overflow-wrap:anywhere; }
   .log-add-row{ display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; }
   .log-add-row input[type=date]{ width:150px; font-family:var(--font-mono); padding:8px 10px; border:1px solid var(--line); border-radius:7px; }
   .log-add-row input[type=text]{ flex:1; min-width:180px; padding:8px 10px; border:1px solid var(--line); border-radius:7px; font-family:var(--font-body); }
@@ -273,8 +316,10 @@
   #toast-host{ position:fixed; bottom:22px; right:26px; display:flex; flex-direction:column; gap:8px; z-index:999; max-width: calc(100vw - 40px); }
   .toast{
     background: var(--ink); color:#fff; padding:11px 16px; border-radius:9px; font-size:13px; font-weight:600;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.18); animation: toast-in .18s ease;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.18); animation: toast-in .18s ease; overflow-wrap:anywhere;
+    display:flex; align-items:center; gap:8px;
   }
+  .toast .icon{ color: #34D399; }
   @keyframes toast-in{ from{ opacity:0; transform:translateY(6px);} to{ opacity:1; transform:translateY(0);} }
 
   /* =========================================================
@@ -287,18 +332,18 @@
       overflow-x:auto; -webkit-overflow-scrolling:touch;
     }
     .brand{ border-bottom:none; margin-bottom:0; padding:0; }
-    .brand span:last-child{ display:none; } /* テキストは省略しロゴのみ表示してスペース確保 */
+    .brand span:last-child{ display:none; }
     .sidebar-footer{ margin-top:0; padding-top:0; border-top:none; margin-left:auto; }
     .new-case-btn{ width:auto; white-space:nowrap; padding:9px 12px; }
     .nav-item{ margin-bottom:0; white-space:nowrap; }
 
     main{ padding: 16px 12px 40px; }
     .page-title{ font-size:19px; }
-    .card{ padding:16px 14px; }
+    .card{ padding:14px 13px; }
 
     .kpi-row{ grid-template-columns: repeat(2,1fr); gap:10px; }
     .kpi{ padding:12px 13px; }
-    .kpi-value{ font-size:17px; }
+    .kpi-value{ font-size:16.5px; }
 
     .grid-2{ grid-template-columns: 1fr; }
     .totals-sticky{ position:static; }
@@ -310,24 +355,10 @@
 
     .filter-row{ grid-template-columns: 1fr; }
 
-    /* 一覧をテーブル→カード表示に切り替え */
-    table.case-table thead{ display:none; }
-    table.case-table, table.case-table tbody{ display:block; width:100%; }
-    table.case-table tr.row{
-      display:block; border:1px solid var(--line); border-radius:12px; margin-bottom:12px; padding:12px 14px; background:var(--surface);
-    }
-    table.case-table td{
-      display:flex; justify-content:space-between; align-items:center; gap:10px;
-      padding: 7px 0; border-bottom:1px dashed var(--line); font-size:13.5px;
-    }
-    table.case-table td:last-child{ border-bottom:none; }
-    table.case-table td[data-label]::before{
-      content: attr(data-label); font-size:11px; font-weight:700; color:var(--ink-soft); flex-shrink:0;
-    }
-    table.case-table td.cust-name{ font-size:15.5px; padding-bottom:9px; border-bottom:1px solid var(--line); }
-    table.case-table td.cust-name::before{ content:''; }
-    .row-actions{ justify-content:flex-end; padding-top:9px !important; }
-    .row-actions::before{ content:'' !important; }
+    .case-row{ flex-wrap:wrap; row-gap:6px; padding:12px 8px; }
+    .cr-name{ flex-basis:100%; white-space:normal; font-size:15px; }
+    .cr-status{ max-width:none; }
+    .cr-profit{ margin-left:auto; }
   }
 </style>
 </head>
@@ -336,6 +367,38 @@
 <div id="toast-host"></div>
 
 <script>
+/* =========================================================
+   ICONS — Lucide風のミニマルなラインアイコンセット(インラインSVG)
+   ========================================================= */
+const ICONS = {
+  dashboard: `<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>`,
+  list: `<line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/>`,
+  plus: `<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>`,
+  save: `<path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4"/><path d="M8 14h8v6H8z"/>`,
+  arrowLeft: `<line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>`,
+  trash: `<line x1="4" y1="7" x2="20" y2="7"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/><path d="M9 7V4h6v3"/>`,
+  calendar: `<rect x="3" y="5" width="18" height="16" rx="2"/><line x1="16" y1="3" x2="16" y2="7"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="3" y1="10" x2="21" y2="10"/>`,
+  search: `<circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>`,
+  filter: `<polygon points="4 4 20 4 14 12 14 19 10 21 10 12 4 4"/>`,
+  check: `<polyline points="5 13 10 18 19 7"/>`,
+  alertTriangle: `<path d="M12 3l9.5 17H2.5z"/><line x1="12" y1="10" x2="12" y2="14.2"/><line x1="12" y1="16.8" x2="12" y2="17"/>`,
+  copy: `<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/>`,
+  messageSquare: `<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>`,
+  key: `<circle cx="8" cy="8" r="4"/><line x1="10.5" y1="10.5" x2="20" y2="20"/><line x1="16" y1="16" x2="19" y2="13"/>`,
+  users: `<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><circle cx="17" cy="9" r="2.6"/><path d="M15.3 14.6c2.3.3 3.7 2.1 3.7 5.4"/>`,
+  trendingUp: `<polyline points="3 17 9 11 13 15 21 6"/><polyline points="15 6 21 6 21 12"/>`,
+  coins: `<circle cx="9" cy="9" r="6"/><path d="M14.5 6.5A6 6 0 1 1 6.5 14.5"/>`,
+  package: `<path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v9l9 5 9-5V8"/><line x1="12" y1="13" x2="12" y2="22"/>`,
+  x: `<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>`,
+  flag: `<path d="M5 21V4"/><path d="M5 4h13l-3 4 3 4H5"/>`,
+  rocket: `<path d="M12 3c3 1 5.5 3.5 6.5 6.5C19 12 18 15 15 17l-3 3-3-3c-3-2-4-5-3.5-7.5C6.5 6.5 9 4 12 3z"/><circle cx="12" cy="10" r="1.6"/>`,
+};
+function icon(name, size, cls){
+  const inner = ICONS[name] || '';
+  const s = size || 16;
+  return `<svg class="icon ${cls||''}" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
+}
+
 /* =========================================================
    DATE / FORMAT HELPERS
    ========================================================= */
@@ -372,7 +435,7 @@ function showToast(msg){
   const host = document.getElementById('toast-host');
   const el = document.createElement('div');
   el.className = 'toast';
-  el.textContent = msg;
+  el.innerHTML = `${icon('check',15)} <span>${escapeHtml(msg)}</span>`;
   host.appendChild(el);
   setTimeout(()=>{ el.style.opacity='0'; el.style.transition='opacity .25s'; setTimeout(()=>el.remove(), 260); }, 2200);
 }
@@ -397,12 +460,37 @@ const STEPS = [
   {key:'ongoing', label:'契約中'},
 ];
 const ONGOING_INDEX = STEPS.length - 1; // 12
+const INTRODUCED_FROM_INDEX = 6; // 「6. 導入スタート」以降(契約中含む)を導入済みとしてカウント
 const PLAN_OPTIONS = {
   '基本(AIO)': ['ライトプラン','ハイプラン'],
   'AI広告': ['ライト','スタンダード','プレミアム'],
-  'インスタ自動投稿': ['スタンダード','ハイプラン'],
+  'インスタ自動投稿': ['ライトプラン','スタンダードプラン'],
 };
-// サービス名：プラン名 の形式で常に表示する
+// 標準料金表：プラン選択時にこの値を各入力欄へ自動セットする(JINさんの金額は対象外＝常に手入力)
+const PLAN_PRICING = {
+  '基本(AIO)': {
+    'ライトプラン': { setupFeeRevenue:45000, revenue:35000, costShimura:3000, costOther:9000 },
+    'ハイプラン':   { setupFeeRevenue:50000, revenue:50000, costShimura:3000, costOther:9000 },
+  },
+  'AI広告': { // 月額のみ・初期費用なし
+    'ライト':       { revenue:35000, costOther:12500 },
+    'スタンダード': { revenue:50000, costOther:25000 },
+    'プレミアム':   { revenue:75000, costOther:37500 },
+  },
+  'インスタ自動投稿': {
+    'ライトプラン':       { setupFeeRevenue:20000, revenue:20000, costOther:8000 },
+    'スタンダードプラン': { setupFeeRevenue:20000, revenue:30000, costOther:10000 },
+  },
+};
+function applyPlanPricing(item){
+  const pricing = (PLAN_PRICING[item.category] || {})[item.planType];
+  if(!pricing) return;
+  if('revenue' in pricing) item.revenue = pricing.revenue;
+  if('costOther' in pricing) item.costOther = pricing.costOther;
+  if('costShimura' in pricing) item.costShimura = pricing.costShimura;
+  if('setupFeeRevenue' in pricing) item.setupFeeRevenue = pricing.setupFeeRevenue;
+  // costJin(JINさん)・setupFeeCostは自動入力の対象外。常に手入力のまま。
+}
 function itemLabel(item){ return `${item.category}：${item.planType}`; }
 function statusLabel(idx){ return STEPS[idx] ? STEPS[idx].label : STEPS[0].label; }
 function statusFilterLabel(idx){
@@ -410,30 +498,30 @@ function statusFilterLabel(idx){
   if(idx===ONGOING_INDEX) return '契約中';
   return `${idx}. ${STEPS[idx].label}`;
 }
+function hasSetupFeeUI(item){ return item.category !== 'AI広告'; }
 
 /* =========================================================
    SEED DATA
    ========================================================= */
-// setupFeeRevenue / setupFeeCost は基本プラン(AIO)にのみ意味を持つ単発の初期費用。
-// 初期費用の原価には志村さん・JINさんへの「報酬」は含めない仕様のため、単一のコスト欄として扱う。
 function makeItem(category, planType, kickoffDate, revenue, shimura, jin, other, setupFeeRevenue, setupFeeCost){
   return {
     id: uid('item'), category, planType, kickoffDate, revenue,
-    costShimura: shimura, costJin: jin, costOther: other,
+    costOther: other, costShimura: shimura, costJin: jin,
     setupFeeRevenue: setupFeeRevenue||0, setupFeeCost: setupFeeCost||0,
   };
 }
 function makeLog(date, text){ return { id: uid('log'), date, text }; }
 
 let state = {
-  view: 'dashboard', // dashboard | list | detail
+  view: 'dashboard',
   selectedId: null,
-  draft: null,          // 編集中の作業コピー(保存ボタンを押すまでcasesへ反映されない)
+  draft: null,
   isNewCase: false,
-  savedSnapshot: null,  // draftを開いた時点のJSON文字列(差分検知用)
-  dismissedAlerts: new Set(), // 手動で「OK」/チェックした通知のID
+  savedSnapshot: null,
+  dismissedAlerts: new Set(),
   listFilters: { contractType:'all', status:'all', keyword:'' },
-  dashboardPeriod: 12, // ダッシュボードの月別グラフ表示期間(月数)。'all'で全期間表示
+  listFilterOpen: false,
+  dashboardPeriod: 12,
   cases: [
     {
       id: uid('case'), customerName: '株式会社サンライズ商事', contractType: '通常', agencyContractSigned: false,
@@ -458,7 +546,7 @@ let state = {
       basePlan: makeItem('基本(AIO)','ハイプラン','2026-04-10', 180000, 40000, 20000, 0, 30000, 8000),
       options: [
         makeItem('AI広告','プレミアム','2026-04-10', 90000, 20000, 0, 12000),
-        makeItem('インスタ自動投稿','ハイプラン','2026-05-01', 45000, 10000, 0, 0),
+        makeItem('インスタ自動投稿','スタンダードプラン','2026-05-01', 45000, 10000, 0, 0, 20000, 4000),
       ],
       logs: [ makeLog('2026-07-05','3ヶ月後レポート提出済み。以降は契約中として継続課金。') ],
     },
@@ -482,32 +570,28 @@ function caseLineItems(c){
   (c.options||[]).forEach(o => items.push(o));
   return items;
 }
-function lineCost(item){ return (item.costShimura||0)+(item.costJin||0)+(item.costOther||0); }
+function lineCost(item){ return (item.costOther||0)+(item.costShimura||0)+(item.costJin||0); }
 function lineProfit(item){ return (item.revenue||0) - lineCost(item); }
 
 function caseTotals(c){
   const items = caseLineItems(c);
   const monthlyRevenue = items.reduce((s,i)=>s+(i.revenue||0),0);
   const monthlyCost = items.reduce((s,i)=>s+lineCost(i),0);
-  const setupRevenue = c.basePlan.setupFeeRevenue||0;
-  const setupCost = c.basePlan.setupFeeCost||0;
+  const setupRevenue = items.reduce((s,i)=>s+(i.setupFeeRevenue||0),0);
+  const setupCost = items.reduce((s,i)=>s+(i.setupFeeCost||0),0);
   const revenue = monthlyRevenue + setupRevenue;
   const cost = monthlyCost + setupCost;
-  return {
-    revenue, cost, profit: revenue - cost, items,
-    setupFee: { revenue:setupRevenue, cost:setupCost, profit:setupRevenue-setupCost },
-  };
+  return { revenue, cost, profit: revenue - cost, items, setupRevenue, setupCost };
 }
 
-// 月別集計：
-// ・月額プラン/オプションは導入月に単発計上。さらに「契約中」に達した案件は翌月以降も今月まで継続計上。
-// ・初期費用(基本プランのみ)は導入月に単発で1回だけ計上し、翌月以降は繰り返さない。
 function monthlyAggregate(cases){
   const map = {};
-  const add = (key, revenue, cost) => {
-    if(!map[key]) map[key] = {revenue:0, cost:0};
+  const add = (key, revenue, costOther, costShimura, costJin) => {
+    if(!map[key]) map[key] = {revenue:0, costOther:0, costShimura:0, costJin:0};
     map[key].revenue += revenue;
-    map[key].cost += cost;
+    map[key].costOther += costOther;
+    map[key].costShimura += costShimura;
+    map[key].costJin += costJin;
   };
   const todayKey = toISO(today).slice(0,7);
   cases.forEach(c => {
@@ -516,33 +600,28 @@ function monthlyAggregate(cases){
       if(!i.kickoffDate) return;
       const baseMonth = parseISO(i.kickoffDate);
       const baseKey = i.kickoffDate.slice(0,7);
-      add(baseKey, i.revenue||0, lineCost(i));
+      add(baseKey, i.revenue||0, i.costOther||0, i.costShimura||0, i.costJin||0);
+      add(baseKey, i.setupFeeRevenue||0, i.setupFeeCost||0, 0, 0);
       if(ongoing){
         let cursor = new Date(baseMonth.getFullYear(), baseMonth.getMonth()+1, 1);
         while(toISO(cursor).slice(0,7) <= todayKey){
-          add(toISO(cursor).slice(0,7), i.revenue||0, lineCost(i));
+          add(toISO(cursor).slice(0,7), i.revenue||0, i.costOther||0, i.costShimura||0, i.costJin||0);
           cursor = new Date(cursor.getFullYear(), cursor.getMonth()+1, 1);
         }
       }
     });
-    if(c.basePlan && c.basePlan.kickoffDate){
-      const setupKey = c.basePlan.kickoffDate.slice(0,7);
-      add(setupKey, c.basePlan.setupFeeRevenue||0, c.basePlan.setupFeeCost||0);
-    }
   });
-  return Object.keys(map).sort().map(k => ({ month:k, revenue:map[k].revenue, cost:map[k].cost, profit: map[k].revenue - map[k].cost }));
+  return Object.keys(map).sort().map(k => {
+    const m = map[k];
+    const cost = m.costOther + m.costShimura + m.costJin;
+    return { month:k, revenue:m.revenue, costOther:m.costOther, costShimura:m.costShimura, costJin:m.costJin, cost, profit: m.revenue - cost };
+  });
 }
-
-// ダッシュボードの表示期間で月別データを絞り込む(直近N ヶ月、または全期間)
 function sliceByPeriod(monthly, period){
   if(period === 'all') return monthly;
   return monthly.slice(-period);
 }
 
-// すべての「有効な」通知を計算する(dismiss判定は呼び出し側で行う)
-// ・期日が当日または過ぎている → danger(赤)
-// ・期日まで3日以内 → warning(黄)
-// ・ステータスがその期日のステップを追い越したら自動的に消える
 function buildAllAlerts(cases){
   const alerts = [];
   cases.forEach(c => {
@@ -558,12 +637,11 @@ function buildAllAlerts(cases){
         {idx:11, date: dl.reportDate,      label:'3ヶ月後レポート提出確認'},
       ];
       checks.forEach(ch => {
-        if(c.currentStepIndex > ch.idx) return; // ステータスが進んだので自動的に消える
+        if(c.currentStepIndex > ch.idx) return;
         const diff = Math.round((ch.date - today)/86400000);
         if(diff <= 0) alerts.push({ id:`${c.id}:${ch.label}:${toISO(ch.date)}`, level:'danger', caseId:c.id, text:`${c.customerName}：「${ch.label}」の期日${diff===0?'は本日です':'を過ぎています'}（期日 ${fmtDate(ch.date)}）` });
         else if(diff <= 3) alerts.push({ id:`${c.id}:${ch.label}:${toISO(ch.date)}`, level:'warning', caseId:c.id, text:`${c.customerName}：「${ch.label}」まで残り${diff}日（期日 ${fmtDate(ch.date)}）` });
       });
-      // 毎月の支払確認：ステップ10以降(契約中を含む)は毎月継続して発生
       if(c.currentStepIndex >= 10){
         const nm = nextMonthly20(today);
         const diffNm = Math.round((nm-today)/86400000);
@@ -578,14 +656,6 @@ function visibleAlerts(cases){
   return buildAllAlerts(cases).filter(a => !state.dismissedAlerts.has(a.id));
 }
 function dismissAlert(id){ state.dismissedAlerts.add(id); }
-function dismissCaseAlerts(caseId){
-  buildAllAlerts(state.cases).filter(a=>a.caseId===caseId).forEach(a=>state.dismissedAlerts.add(a.id));
-}
-function worstLevel(alerts){
-  if(alerts.some(a=>a.level==='danger')) return 'danger';
-  if(alerts.length) return 'warning';
-  return null;
-}
 
 /* =========================================================
    RENDER: SHELL
@@ -604,10 +674,10 @@ function render(){
   app.innerHTML = `
     <div class="sidebar">
       <div class="brand"><span class="brand-mark">C</span><span>COCOSystem PM</span></div>
-      <div class="nav-item ${state.view==='dashboard'?'active':''}" data-nav="dashboard"><span class="nav-icon">◆</span> ダッシュボード</div>
-      <div class="nav-item ${state.view==='list'||state.view==='detail'?'active':''}" data-nav="list"><span class="nav-icon">≡</span> 案件一覧</div>
+      <div class="nav-item ${state.view==='dashboard'?'active':''}" data-nav="dashboard">${icon('dashboard',16)} ダッシュボード</div>
+      <div class="nav-item ${state.view==='list'||state.view==='detail'?'active':''}" data-nav="list">${icon('list',16)} 案件一覧</div>
       <div class="sidebar-footer">
-        <button class="new-case-btn" id="btn-new-case">＋ 新規案件を登録</button>
+        <button class="new-case-btn" id="btn-new-case">${icon('plus',15)} 新規案件を登録</button>
       </div>
     </div>
     <main id="main"></main>
@@ -626,13 +696,13 @@ function render(){
 }
 
 function createNewCase(){
+  const basePlan = makeItem('基本(AIO)','ライトプラン','', 0,0,0,0);
+  applyPlanPricing(basePlan);
   const draft = {
     id: uid('case'), customerName: '新規案件', contractType: '通常', agencyContractSigned:false,
     currentStepIndex: 0, kickoffDate: '',
     accountId:'', accountPw:'',
-    basePlan: makeItem('基本(AIO)','ライトプラン','', 0,0,0,0, 30000, 5000),
-    options: [],
-    logs: [],
+    basePlan, options: [], logs: [],
   };
   state.draft = draft;
   state.selectedId = draft.id;
@@ -656,31 +726,54 @@ function openDetail(caseId){
 /* =========================================================
    RENDER: DASHBOARD
    ========================================================= */
+function marginClass(pct){
+  if(pct >= 20) return 'good';
+  if(pct >= 0) return 'ok';
+  return 'bad';
+}
+
 function renderDashboard(){
   const main = document.getElementById('main');
   const allMonthly = monthlyAggregate(state.cases);
-  const monthly = sliceByPeriod(allMonthly, state.dashboardPeriod); // グラフ表示用(期間で絞り込み)
+  const monthly = sliceByPeriod(allMonthly, state.dashboardPeriod);
   const alerts = visibleAlerts(state.cases);
-  const totalProfit = allMonthly.reduce((s,m)=>s+m.profit,0); // 累計KPIは常に全期間で計算
+  const totalProfit = allMonthly.reduce((s,m)=>s+m.profit,0);
   const thisMonthKey = toISO(today).slice(0,7);
   const thisMonth = allMonthly.find(m=>m.month===thisMonthKey);
-  const maxVal = Math.max(1, ...monthly.map(m=>Math.max(m.revenue, m.cost)));
+  const maxVal = Math.max(1, ...monthly.map(m=>Math.max(m.revenue, m.cost, m.profit)));
   const hiddenMonths = allMonthly.length - monthly.length;
+  const hasDanger = alerts.some(a=>a.level==='danger');
 
   main.innerHTML = `
-    <div class="page-title">ダッシュボード</div>
+    <div class="page-title">${icon('dashboard',20)} ダッシュボード</div>
     <div class="page-sub">${fmtDate(today)} 時点の案件状況</div>
 
     <div class="kpi-row">
-      <div class="kpi"><div class="kpi-label">案件数</div><div class="kpi-value">${state.cases.length} 件</div></div>
-      <div class="kpi"><div class="kpi-label">累計 最終利益</div><div class="kpi-value profit">${fmtMoney(totalProfit)}</div></div>
-      <div class="kpi"><div class="kpi-label">今月の利益</div><div class="kpi-value ${thisMonth&&thisMonth.profit<0?'danger':'profit'}">${fmtMoney(thisMonth?thisMonth.profit:0)}</div></div>
-      <div class="kpi"><div class="kpi-label">要対応アラート</div><div class="kpi-value ${alerts.some(a=>a.level==='danger')?'danger':''}">${alerts.length} 件</div></div>
+      <div class="kpi kpi-blue">
+        ${icon('users',26,'kpi-icon')}
+        <div class="kpi-label">案件数</div>
+        <div class="kpi-value">${state.cases.length} 件</div>
+      </div>
+      <div class="kpi kpi-green">
+        ${icon('trendingUp',26,'kpi-icon')}
+        <div class="kpi-label">累計 最終利益</div>
+        <div class="kpi-value">${fmtMoney(totalProfit)}</div>
+      </div>
+      <div class="kpi kpi-pink">
+        ${icon('coins',26,'kpi-icon')}
+        <div class="kpi-label">今月の利益</div>
+        <div class="kpi-value">${fmtMoney(thisMonth?thisMonth.profit:0)}</div>
+      </div>
+      <div class="kpi kpi-plain">
+        ${icon('alertTriangle',24,'kpi-icon')}
+        <div class="kpi-label">要対応アラート</div>
+        <div class="kpi-value ${hasDanger?'danger':''}">${alerts.length} 件</div>
+      </div>
     </div>
 
     <div class="grid-2">
       <div class="card">
-        <h3 class="section-h">月別 売上・原価・利益の推移</h3>
+        <h3 class="section-h">${icon('trendingUp',16)} 月別 売上・原価・利益の推移</h3>
         <div class="period-toggle" id="period-toggle">
           ${[3,6,12,'all'].map(p => `
             <button class="period-btn ${state.dashboardPeriod===p?'active':''}" data-period="${p}">${p==='all'?'全期間':p+'ヶ月'}</button>
@@ -689,27 +782,37 @@ function renderDashboard(){
         ${hiddenMonths > 0 ? `<div class="period-note">全${allMonthly.length}ヶ月分のうち直近${monthly.length}ヶ月分を表示中です。それ以前のデータは「全期間」に切り替えるか、グラフを横スクロールすると確認できます。</div>` : ''}
         ${monthly.length===0 ? `<div class="empty-state">まだ導入日のあるプランがありません</div>` : `
         <div class="chart-wrap" id="chart-wrap"><div class="chart">
-          ${monthly.map(m => `
+          ${monthly.map(m => {
+            const margin = m.revenue > 0 ? (m.profit / m.revenue) * 100 : 0;
+            return `
             <div class="chart-col">
               <div class="chart-bars">
                 <div class="bar revenue" style="height:${Math.max(4,(m.revenue/maxVal)*150)}px" title="売上 ${fmtMoney(m.revenue)}"></div>
-                <div class="bar cost" style="height:${Math.max(4,(m.cost/maxVal)*150)}px" title="原価 ${fmtMoney(m.cost)}"></div>
+                <div class="stack-bar" style="height:${Math.max(4,(m.cost/maxVal)*150)}px" title="原価 ${fmtMoney(m.costOther)} ／ 志村さん ${fmtMoney(m.costShimura)} ／ JIN ${fmtMoney(m.costJin)}">
+                  <div class="seg-other" style="height:${(m.costOther/maxVal)*150}px"></div>
+                  <div class="seg-shimura" style="height:${(m.costShimura/maxVal)*150}px"></div>
+                  <div class="seg-jin" style="height:${(m.costJin/maxVal)*150}px"></div>
+                </div>
                 <div class="bar profit" style="height:${Math.max(4,(Math.max(m.profit,0)/maxVal)*150)}px" title="利益 ${fmtMoney(m.profit)}"></div>
               </div>
               <div class="chart-month">${fmtMonthLabel(m.month)}</div>
+              <div class="margin-badge ${marginClass(margin)}" title="利益率 = 利益 ÷ 売上 × 100">${margin.toFixed(1)}%</div>
             </div>
-          `).join('')}
+          `;}).join('')}
         </div></div>
         <div class="chart-legend">
           <span><span class="legend-dot" style="background:var(--brand-tint);border:1px solid var(--brand)"></span>売上</span>
-          <span><span class="legend-dot" style="background:#F0E6C4;border:1px solid var(--warn)"></span>原価</span>
+          <span><span class="legend-dot" style="background:var(--cost-other)"></span>原価</span>
+          <span><span class="legend-dot" style="background:var(--cost-shimura)"></span>志村さん</span>
+          <span><span class="legend-dot" style="background:var(--cost-jin)"></span>JIN</span>
           <span><span class="legend-dot" style="background:var(--profit)"></span>利益</span>
+          <span>バー下の％＝利益率</span>
         </div>
-        <div class="page-sub" style="margin:12px 0 0;">※基本プランの初期費用は導入月のみ、月額プランは「契約中」の間ずっと積み上がります</div>`}
+        <div class="footnote">※基本プランの初期費用は導入月のみ、月額プランは「契約中」の間ずっと積み上がります</div>`}
       </div>
 
       <div class="card">
-        <h3 class="section-h">直近で必要なタスク</h3>
+        <h3 class="section-h">${icon('alertTriangle',16)} 直近で必要なタスク</h3>
         <div class="chart-legend" style="margin-bottom:10px;">
           <span><span class="legend-dot" style="background:var(--danger)"></span>期日超過・本日中</span>
           <span><span class="legend-dot" style="background:var(--warn)"></span>3日以内</span>
@@ -721,7 +824,7 @@ function renderDashboard(){
                 <span class="alert-dot ${a.level}"></span>
                 <span class="alert-text">${a.text}</span>
               </div>
-              <button class="alert-ok-btn" data-dismiss="${a.id}">OK</button>
+              <button class="alert-ok-btn" data-dismiss="${a.id}">${icon('check',13)} OK</button>
             </div>
           `).join('')}
       </div>
@@ -744,13 +847,12 @@ function renderDashboard(){
       renderDashboard();
     });
   });
-  // グラフは常に最新月が見える位置(右端)までスクロールしておく
   const chartWrap = document.getElementById('chart-wrap');
   if(chartWrap) chartWrap.scrollLeft = chartWrap.scrollWidth;
 }
 
 /* =========================================================
-   RENDER: LIST（フィルタ部は据え置き、tbodyのみ再描画してフォーカスを保持）
+   RENDER: LIST
    ========================================================= */
 function filteredCases(){
   const f = state.listFilters;
@@ -762,114 +864,122 @@ function filteredCases(){
     return true;
   });
 }
+function activeFilterCount(){
+  const f = state.listFilters;
+  let n = 0;
+  if(f.contractType !== 'all') n++;
+  if(f.status !== 'all') n++;
+  if(f.keyword.trim() !== '') n++;
+  return n;
+}
+function introducedCount(){
+  return state.cases.filter(c => c.currentStepIndex >= INTRODUCED_FROM_INDEX).length;
+}
 
 function renderList(){
   const main = document.getElementById('main');
+  const fCount = activeFilterCount();
   main.innerHTML = `
-    <div class="page-title">案件一覧</div>
-    <div class="page-sub">全 ${state.cases.length} 件</div>
+    <div class="page-title">${icon('list',20)} 案件一覧</div>
+    <div class="page-sub">
+      <span>全 ${state.cases.length} 件</span>
+      <span class="intro-badge">${icon('rocket',13)} 導入 ${introducedCount()} 件</span>
+    </div>
 
-    <div class="card" style="margin-bottom:16px;">
-      <div class="filter-row">
-        <div class="field">
-          <label>店舗名・顧客名で検索</label>
-          <input type="text" id="filter-keyword" placeholder="例：ベーカリー" value="${escapeAttr(state.listFilters.keyword)}" />
-        </div>
-        <div class="field">
-          <label>契約形態</label>
-          <select id="filter-contract">
-            <option value="all">すべて</option>
-            <option value="通常">通常</option>
-            <option value="代理店">代理店</option>
-            <option value="補助金">補助金</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>現在のステータス</label>
-          <select id="filter-status">
-            <option value="all">すべて</option>
-            ${STEPS.map((s,idx)=>`<option value="${idx}">${statusFilterLabel(idx)}</option>`).join('')}
-          </select>
-        </div>
-        <button class="btn-ghost" id="filter-reset">条件をクリア</button>
+    <div class="card" style="margin-bottom:14px;">
+      <div class="filter-toggle-row">
+        <button class="filter-toggle-btn" id="filter-toggle-btn">
+          ${icon('filter',15)} 絞り込み ${fCount>0 ? `<span class="filter-badge">${fCount}</span>` : ''} ${state.listFilterOpen ? '▲' : '▼'}
+        </button>
+        ${fCount>0 ? `<button class="btn-ghost" id="filter-clear-inline">${icon('x',13)} 条件をクリア</button>` : ''}
       </div>
+      ${state.listFilterOpen ? `
+        <div class="filter-row">
+          <div class="field">
+            <label>${icon('search',13)} 店舗名・顧客名で検索</label>
+            <input type="text" id="filter-keyword" placeholder="例：ベーカリー" value="${escapeAttr(state.listFilters.keyword)}" />
+          </div>
+          <div class="field">
+            <label>契約形態</label>
+            <select id="filter-contract">
+              <option value="all">すべて</option>
+              <option value="通常">通常</option>
+              <option value="代理店">代理店</option>
+              <option value="補助金">補助金</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>現在のステータス</label>
+            <select id="filter-status">
+              <option value="all">すべて</option>
+              ${STEPS.map((s,idx)=>`<option value="${idx}">${statusFilterLabel(idx)}</option>`).join('')}
+            </select>
+          </div>
+          <button class="btn-ghost" id="filter-reset">条件をクリア</button>
+        </div>
+      ` : ''}
     </div>
 
     <div class="card">
-      <table class="case-table">
-        <thead><tr>
-          <th>顧客名</th><th>契約形態</th><th>現在のステータス</th><th>合計利益</th><th>アラート</th><th></th>
-        </tr></thead>
-        <tbody id="case-tbody"></tbody>
-      </table>
+      <div class="case-list" id="case-list"></div>
     </div>
   `;
-  // フィルタ入力の値を反映(セレクトはinnerHTML後にselectedを付け直す)
-  document.getElementById('filter-contract').value = state.listFilters.contractType;
-  document.getElementById('filter-status').value = state.listFilters.status;
 
-  document.getElementById('filter-keyword').addEventListener('input', e=>{
-    state.listFilters.keyword = e.target.value; renderTableRows();
+  document.getElementById('filter-toggle-btn').addEventListener('click', ()=>{
+    state.listFilterOpen = !state.listFilterOpen;
+    renderList();
   });
-  document.getElementById('filter-contract').addEventListener('change', e=>{
-    state.listFilters.contractType = e.target.value; renderTableRows();
-  });
-  document.getElementById('filter-status').addEventListener('change', e=>{
-    state.listFilters.status = e.target.value; renderTableRows();
-  });
-  document.getElementById('filter-reset').addEventListener('click', ()=>{
+  const clearInline = document.getElementById('filter-clear-inline');
+  if(clearInline) clearInline.addEventListener('click', ()=>{
     state.listFilters = { contractType:'all', status:'all', keyword:'' };
     renderList();
   });
 
-  renderTableRows();
+  if(state.listFilterOpen){
+    document.getElementById('filter-contract').value = state.listFilters.contractType;
+    document.getElementById('filter-status').value = state.listFilters.status;
+    document.getElementById('filter-keyword').addEventListener('input', e=>{
+      state.listFilters.keyword = e.target.value; renderCaseList();
+    });
+    document.getElementById('filter-contract').addEventListener('change', e=>{
+      state.listFilters.contractType = e.target.value; renderCaseList();
+    });
+    document.getElementById('filter-status').addEventListener('change', e=>{
+      state.listFilters.status = e.target.value; renderCaseList();
+    });
+    document.getElementById('filter-reset').addEventListener('click', ()=>{
+      state.listFilters = { contractType:'all', status:'all', keyword:'' };
+      renderList();
+    });
+  }
+
+  renderCaseList();
 }
 
-function renderTableRows(){
-  const tbody = document.getElementById('case-tbody');
+function renderCaseList(){
+  const host = document.getElementById('case-list');
   const rows = filteredCases();
-  const allAlerts = visibleAlerts(state.cases);
 
   if(rows.length === 0){
-    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state">条件に一致する案件がありません</div></td></tr>`;
+    host.innerHTML = `<div class="empty-state">条件に一致する案件がありません</div>`;
     return;
   }
 
-  tbody.innerHTML = rows.map(c => {
+  host.innerHTML = rows.map(c => {
     const t = caseTotals(c);
     const ongoing = c.currentStepIndex >= ONGOING_INDEX;
-    const caseAlerts = allAlerts.filter(a=>a.caseId===c.id);
-    const lvl = worstLevel(caseAlerts);
     return `
-      <tr class="row">
-        <td class="cust-name" data-open="${c.id}">${escapeHtml(c.customerName)}</td>
-        <td data-label="契約形態"><span class="pill type-${c.contractType}">${c.contractType}</span></td>
-        <td data-label="ステータス" class="status-txt ${ongoing?'ongoing':''}">${statusLabel(c.currentStepIndex)}</td>
-        <td data-label="合計利益" class="money-cell ${t.profit>=0?'pos':'neg'}">${fmtMoney(t.profit)}</td>
-        <td data-label="アラート">
-          ${caseAlerts.length ? `
-            <label class="alert-check level-${lvl}">
-              <input type="checkbox" data-ack="${c.id}" />
-              ⚠ ${caseAlerts.length}件（確認して消す）
-            </label>
-          ` : '—'}
-        </td>
-        <td class="row-actions">
-          <button class="btn-small" data-open="${c.id}">開く</button>
-          <button class="btn-small" data-dup="${c.id}">複製</button>
-        </td>
-      </tr>
+      <div class="case-row">
+        <span class="cr-name" data-open="${c.id}" title="${escapeAttr(c.customerName)}">${escapeHtml(c.customerName)}</span>
+        <span class="cr-status ${ongoing?'ongoing':''}" title="${escapeAttr(statusLabel(c.currentStepIndex))}">${statusLabel(c.currentStepIndex)}</span>
+        <span class="cr-profit ${t.profit>=0?'pos':'neg'}">${fmtMoney(t.profit)}</span>
+        <button class="btn-small" data-dup="${c.id}">${icon('copy',12)} 複製</button>
+      </div>
     `;
   }).join('');
 
-  tbody.querySelectorAll('[data-open]').forEach(el => el.addEventListener('click', () => openDetail(el.dataset.open)));
-  tbody.querySelectorAll('[data-ack]').forEach(el => {
-    el.addEventListener('click', (e) => {
-      e.stopPropagation();
-      if(el.checked){ dismissCaseAlerts(el.dataset.ack); renderTableRows(); }
-    });
-  });
-  tbody.querySelectorAll('[data-dup]').forEach(el => {
+  host.querySelectorAll('[data-open]').forEach(el => el.addEventListener('click', () => openDetail(el.dataset.open)));
+  host.querySelectorAll('[data-dup]').forEach(el => {
     el.addEventListener('click', (e) => { e.stopPropagation(); duplicateCase(el.dataset.dup); });
   });
 }
@@ -889,13 +999,12 @@ function duplicateCase(caseId){
   copy.options = copy.options.map(o => ({ ...o, id: uid('item'), kickoffDate: '' }));
   copy.logs = [];
   state.cases.unshift(copy);
-  showToast(`「${orig.customerName}」を複製しました（金額はそのまま、進捗・メモは初期化されます）`);
-  renderTableRows();
-  document.querySelector('.page-sub').textContent = `全 ${state.cases.length} 件`;
+  showToast(`「${orig.customerName}」を複製しました`);
+  renderList();
 }
 
 /* =========================================================
-   RENDER: DETAIL（state.draft を編集し、保存ボタンでcasesへ確定）
+   RENDER: DETAIL
    ========================================================= */
 function isDraftDirty(){
   if(!state.draft) return false;
@@ -934,27 +1043,27 @@ function renderDetail(){
 
   main.innerHTML = `
     <div class="detail-header">
-      <div>
+      <div style="min-width:0;">
         <input class="name-input" id="f-name" value="${escapeAttr(c.customerName)}" />
         <div class="page-sub" style="margin-top:6px;">${state.isNewCase ? '未保存の新規案件' : `案件ID: ${c.id}`}</div>
       </div>
       <div class="header-actions">
         <span class="save-indicator" id="save-indicator"></span>
-        <button class="btn-primary" id="btn-save">保存する</button>
-        <button class="btn-ghost" id="btn-back">← 一覧へ戻る</button>
-        ${state.isNewCase ? '' : `<button class="btn-danger-ghost" id="btn-delete">案件を削除</button>`}
+        <button class="btn-primary" id="btn-save">${icon('save',15)} 保存する</button>
+        <button class="btn-ghost" id="btn-back">${icon('arrowLeft',15)} 一覧へ戻る</button>
+        ${state.isNewCase ? '' : `<button class="btn-danger-ghost" id="btn-delete">${icon('trash',15)} 案件を削除</button>`}
       </div>
     </div>
 
     <div class="card" style="margin-bottom:16px;">
-      <h3 class="section-h">進捗ステータス ${ongoing ? '<span style="color:var(--rail-ongoing);font-weight:700;">（現在：契約中・継続課金中）</span>' : ''}</h3>
+      <h3 class="section-h">${icon('flag',16)} 進捗ステータス ${ongoing ? '<span style="color:var(--rail-ongoing);font-weight:700;">（現在：契約中・継続課金中）</span>' : ''}</h3>
       <div class="rail" id="rail"></div>
     </div>
 
     <div class="grid-2">
       <div>
         <div class="card" style="margin-bottom:16px;">
-          <h3 class="section-h">契約形態</h3>
+          <h3 class="section-h">${icon('users',16)} 契約形態</h3>
           <div class="radio-group">
             ${['通常','代理店','補助金'].map(t => `
               <label class="radio-opt">
@@ -971,38 +1080,38 @@ function renderDetail(){
         </div>
 
         <div class="card" style="margin-bottom:16px;">
-          <h3 class="section-h">導入スタート日・アカウント情報</h3>
+          <h3 class="section-h">${icon('calendar',16)} 導入スタート日・アカウント情報</h3>
           <div class="field-row two">
             <div class="field">
-              <label>導入スタート日（★以降の期日を自動算出）</label>
+              <label>${icon('calendar',13)} 導入スタート日（★以降の期日を自動算出）</label>
               <input type="date" id="f-kickoff" value="${c.kickoffDate||''}" />
             </div>
             <div class="field"></div>
           </div>
           <div class="account-box">
-            <div class="field" style="flex:1"><label>ログインID</label><input type="text" id="f-account-id" value="${escapeAttr(c.accountId||'')}" placeholder="未発行"/></div>
-            <div class="field" style="flex:1"><label>パスワード</label><input type="text" id="f-account-pw" value="${escapeAttr(c.accountPw||'')}" placeholder="未発行"/></div>
+            <div class="field" style="flex:1"><label>${icon('key',13)} ログインID</label><input type="text" id="f-account-id" value="${escapeAttr(c.accountId||'')}" placeholder="未発行"/></div>
+            <div class="field" style="flex:1"><label>${icon('key',13)} パスワード</label><input type="text" id="f-account-pw" value="${escapeAttr(c.accountPw||'')}" placeholder="未発行"/></div>
           </div>
         </div>
 
         <div class="card" style="margin-bottom:16px;">
-          <h3 class="section-h">メモ・履歴</h3>
+          <h3 class="section-h">${icon('messageSquare',16)} メモ・履歴</h3>
           <div id="log-list">${renderLogs(c)}</div>
           <div class="log-add-row">
             <input type="date" id="new-log-date" value="${toISO(today)}" />
             <input type="text" id="new-log-text" placeholder="例：お客様からの返信待ち／Google連携エラー対応中" />
-            <button class="btn-primary" id="btn-add-log">追加</button>
+            <button class="btn-primary" id="btn-add-log">${icon('plus',14)} 追加</button>
           </div>
         </div>
 
         <div class="card" style="margin-bottom:16px;">
-          <h3 class="section-h">基本プラン（AIO）※必須</h3>
+          <h3 class="section-h">${icon('package',16)} 基本プラン（AIO）※必須</h3>
           ${renderPlanCard(c.basePlan, 'base')}
         </div>
 
         <div class="card">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-            <h3 class="section-h" style="margin:0;">オプション</h3>
+            <h3 class="section-h" style="margin:0;">${icon('package',16)} オプション</h3>
           </div>
           ${c.options.map(o => renderPlanCard(o, 'opt')).join('') || `<div class="alert-empty" style="margin-bottom:12px;">追加されているオプションはありません</div>`}
           <div class="add-opt-row">
@@ -1010,7 +1119,7 @@ function renderDetail(){
               <option value="AI広告">AI広告</option>
               <option value="インスタ自動投稿">インスタ自動投稿</option>
             </select>
-            <button class="btn-primary" id="btn-add-opt">＋ オプションを追加</button>
+            <button class="btn-primary" id="btn-add-opt">${icon('plus',14)} オプションを追加</button>
           </div>
         </div>
       </div>
@@ -1025,7 +1134,6 @@ function renderDetail(){
   renderTotals(c);
   updateSaveIndicator();
 
-  // ---- header events ----
   document.getElementById('btn-back').addEventListener('click', ()=> goTo('list'));
   document.getElementById('btn-save').addEventListener('click', saveDraft);
   const delBtn = document.getElementById('btn-delete');
@@ -1038,21 +1146,17 @@ function renderDetail(){
   });
   document.getElementById('f-name').addEventListener('input', e=>{ c.customerName = e.target.value; updateSaveIndicator(); });
 
-  // ---- contract type ----
   document.querySelectorAll('input[name=contractType]').forEach(r=>{
     r.addEventListener('change', e=>{ c.contractType = e.target.value; renderDetail(); });
   });
   const agencyCb = document.getElementById('f-agency-signed');
   if(agencyCb) agencyCb.addEventListener('change', e=>{ c.agencyContractSigned = e.target.checked; renderDetail(); });
 
-  // ---- kickoff date ----
   document.getElementById('f-kickoff').addEventListener('change', e=>{ c.kickoffDate = e.target.value; renderRail(c); updateSaveIndicator(); });
 
-  // ---- account ----
   document.getElementById('f-account-id').addEventListener('input', e=>{ c.accountId = e.target.value; updateSaveIndicator(); });
   document.getElementById('f-account-pw').addEventListener('input', e=>{ c.accountPw = e.target.value; updateSaveIndicator(); });
 
-  // ---- logs ----
   document.getElementById('btn-add-log').addEventListener('click', ()=>{
     const dateEl = document.getElementById('new-log-date');
     const textEl = document.getElementById('new-log-text');
@@ -1064,14 +1168,14 @@ function renderDetail(){
     btn.addEventListener('click', ()=>{ c.logs = c.logs.filter(l=>l.id!==btn.dataset.removeLog); renderDetail(); });
   });
 
-  // ---- plan cards ----
   bindPlanCardEvents(c);
 
-  // ---- add option ----
   document.getElementById('btn-add-opt').addEventListener('click', ()=>{
     const cat = document.getElementById('new-opt-category').value;
     const defaultPlan = PLAN_OPTIONS[cat][0];
-    c.options.push(makeItem(cat, defaultPlan, c.kickoffDate || '', 0,0,0,0));
+    const item = makeItem(cat, defaultPlan, c.kickoffDate || '', 0,0,0,0);
+    applyPlanPricing(item);
+    c.options.push(item);
     renderDetail();
   });
 }
@@ -1081,7 +1185,7 @@ function renderLogs(c){
   return c.logs.slice().sort((a,b)=> b.date.localeCompare(a.date)).map(l => `
     <div class="log-row">
       <div><span class="log-date">${l.date}</span><span class="log-text">${escapeHtml(l.text)}</span></div>
-      <button class="remove-opt" data-remove-log="${l.id}">削除</button>
+      <button class="remove-opt" data-remove-log="${l.id}">${icon('trash',12)} 削除</button>
     </div>
   `).join('');
 }
@@ -1089,13 +1193,14 @@ function renderLogs(c){
 function renderPlanCard(item, kind){
   const planChoices = PLAN_OPTIONS[item.category];
   const profit = lineProfit(item);
+  const showSetup = hasSetupFeeUI(item);
   return `
     <div class="plan-card" data-item-id="${item.id}">
       <div class="plan-card-head">
-        <span class="plan-card-title" data-plan-title="${item.id}">${itemLabel(item)}${kind==='base' ? '<span class="req-tag">必須</span>' : ''}</span>
+        <span class="plan-card-title" data-plan-title="${item.id}">${icon('package',14)} ${itemLabel(item)}${kind==='base' ? '<span class="req-tag">必須</span>' : ''}</span>
         <div style="display:flex; align-items:center; gap:12px;">
           <span class="plan-profit-tag ${profit>=0?'v pos':'v neg'}" data-line-profit="${item.id}">月額利益 ${fmtMoney(profit)}</span>
-          ${kind==='opt' ? `<button class="remove-opt" data-remove-opt="${item.id}">削除</button>` : ''}
+          ${kind==='opt' ? `<button class="remove-opt" data-remove-opt="${item.id}">${icon('trash',12)} 削除</button>` : ''}
         </div>
       </div>
       <div class="field-row">
@@ -1106,29 +1211,30 @@ function renderPlanCard(item, kind){
           </select>
         </div>
         <div class="field">
-          <label>導入日</label>
+          <label>${icon('calendar',12)} 導入日</label>
           <input type="date" data-field="kickoffDate" data-item="${item.id}" value="${item.kickoffDate||''}" />
         </div>
         <div class="field">
-          <label>月額売上金額（円）</label>
+          <label>${icon('coins',12)} 月額売上金額（円）</label>
           <input type="number" step="1000" data-field="revenue" data-item="${item.id}" value="${item.revenue||0}" />
         </div>
       </div>
+      <div class="autofill-note">${icon('check',12)} プランを選択すると、標準料金が売上・原価欄に自動入力されます（JINさんの金額欄を除く。手動修正も可能です）</div>
       <div class="field-row">
         <div class="field">
-          <label>原価：志村さん報酬</label>
+          <label>①原価（実費・外注費など）</label>
+          <input type="number" step="1000" data-field="costOther" data-item="${item.id}" value="${item.costOther||0}" />
+        </div>
+        <div class="field">
+          <label>②志村さんへの報酬</label>
           <input type="number" step="1000" data-field="costShimura" data-item="${item.id}" value="${item.costShimura||0}" />
         </div>
         <div class="field">
-          <label>原価：JINさん報酬</label>
+          <label>③JINさんへの報酬</label>
           <input type="number" step="1000" data-field="costJin" data-item="${item.id}" value="${item.costJin||0}" />
         </div>
-        <div class="field">
-          <label>原価：その他外注費</label>
-          <input type="number" step="1000" data-field="costOther" data-item="${item.id}" value="${item.costOther||0}" />
-        </div>
       </div>
-      ${kind==='base' ? `
+      ${showSetup ? `
         <div class="setup-fee-block">
           <div class="field-row two">
             <div class="field">
@@ -1136,7 +1242,7 @@ function renderPlanCard(item, kind){
               <input type="number" step="1000" data-field="setupFeeRevenue" data-item="${item.id}" value="${item.setupFeeRevenue||0}" />
             </div>
             <div class="field">
-              <label>初期費用 — 原価（実費など）</label>
+              <label>初期費用 — ①原価（実費など）</label>
               <input type="number" step="1000" data-field="setupFeeCost" data-item="${item.id}" value="${item.setupFeeCost||0}" />
             </div>
           </div>
@@ -1144,7 +1250,7 @@ function renderPlanCard(item, kind){
             初期費用の利益：${fmtMoney((item.setupFeeRevenue||0)-(item.setupFeeCost||0))}（志村さん・JINさんへの報酬は初期費用には発生しません）
           </div>
         </div>
-      ` : ''}
+      ` : `<div class="setup-fee-note" style="margin-top:8px;">AI広告は月額のみのサービスのため、初期費用はありません。</div>`}
     </div>
   `;
 }
@@ -1161,15 +1267,18 @@ function bindPlanCardEvents(c){
       const item = findItemById(c, el.dataset.item);
       if(!item) return;
       const field = el.dataset.field;
-      if(['revenue','costShimura','costJin','costOther','setupFeeRevenue','setupFeeCost'].includes(field)){
+
+      if(field === 'planType'){
+        item.planType = el.value;
+        applyPlanPricing(item);
+        renderDetail();
+        return;
+      }
+
+      if(['revenue','costOther','costShimura','costJin','setupFeeRevenue','setupFeeCost'].includes(field)){
         item[field] = parseFloat(el.value) || 0;
       } else {
         item[field] = el.value;
-      }
-      // 軽量更新: 入力欄のフォーカスを保持するため、関連する表示だけをピンポイントで更新する
-      if(field === 'planType'){
-        const titleEl = document.querySelector(`[data-plan-title="${item.id}"]`);
-        if(titleEl) titleEl.innerHTML = `${itemLabel(item)}${item === c.basePlan ? '<span class="req-tag">必須</span>' : ''}`;
       }
       const tag = document.querySelector(`[data-line-profit="${item.id}"]`);
       if(tag){
@@ -1198,7 +1307,7 @@ function renderTotals(c){
   const panel = document.getElementById('totals-panel');
   const t = caseTotals(c);
   panel.innerHTML = `
-    <h3 class="section-h">損益サマリー（リアルタイム）</h3>
+    <h3 class="section-h">${icon('coins',16)} 損益サマリー（リアルタイム）</h3>
     <div class="totals-line"><span class="l">合計売上（月額＋初期費用）</span><span class="v">${fmtMoney(t.revenue)}</span></div>
     <div class="totals-line"><span class="l">合計原価（月額＋初期費用）</span><span class="v">${fmtMoney(t.cost)}</span></div>
     <div class="totals-line final"><span class="l">最終利益</span><span class="v ${t.profit>=0?'pos':'neg'}">${fmtMoney(t.profit)}</span></div>
@@ -1210,10 +1319,12 @@ function renderTotals(c){
           <span style="font-family:var(--font-mono);">${fmtMoney(lineProfit(i))}</span>
         </div>
       `).join('')}
-      <div style="display:flex; justify-content:space-between; font-size:12.5px; padding:4px 0; color:var(--ink-soft);">
-        <span>基本(AIO)：初期費用（単発）</span>
-        <span style="font-family:var(--font-mono);">${fmtMoney(t.setupFee.profit)}</span>
-      </div>
+      ${t.items.filter(i => hasSetupFeeUI(i)).map(i => `
+        <div style="display:flex; justify-content:space-between; font-size:12.5px; padding:4px 0; color:var(--ink-soft);">
+          <span>${itemLabel(i)}：初期費用</span>
+          <span style="font-family:var(--font-mono);">${fmtMoney((i.setupFeeRevenue||0)-(i.setupFeeCost||0))}</span>
+        </div>
+      `).join('')}
     </div>
     <div class="page-sub" style="margin-top:12px; padding-top:12px; border-top:1px solid var(--line);">
       入力内容はまだ確定していません。反映するには上部の「保存する」を押してください。
